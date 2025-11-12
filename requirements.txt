@@ -1,0 +1,11 @@
+# requirements.txt
+fastapi
+uvicorn[standard]
+python-multipart
+numpy
+opencv-python-headless
+# New libraries for Gemini & OCR
+google-generativeai
+python-dotenv
+Pillow
+paddleocr

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphoGlyph AI - Handwriting Analyzer</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js for the radar chart -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Google Fonts: Inter and a serif font for headings -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-light: #f4f1ea;
+            --card-light: rgba(255, 255, 255, 0.75);
+            --text-dark: #4a4a4a;
+            --text-soft: #888888;
+            --accent-sage: #8FBC8F;
+            --accent-clay: #CDA26F;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZHRoPSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMCAuNWg5Nm0tMTYgMWgxNm0tMzIgMmgyNHYxSDB6bTE2IDRoMzJ2MUgxNnptOCAzaDE2djFIMjR6bS04IDNoNDB2MUgxNnptMTYgM2g0OHYxSDMyem0tMzIgNGg2NHYxSDB6bTE2IDNoMzJ2MUgxNnptOCA0aDE2djFIMjR6bTE2IDRoMzJ2MUg0MHptLTMyIDVoOTZ2MUg4eiIgb3BhY2l0eT0iLjA1IiAvPjwvc3ZnPg==');
+        }
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        #fileInput, #cameraInput {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pen-loader {
+            width: 100px;
+            height: 40px;
+            position: relative;
+            margin: 20px auto;
+        }
+        .pen-loader svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .pen-loader .pen-path {
+            stroke-dasharray: 500;
+            stroke-dashoffset: 500;
+            animation: draw 2s linear infinite;
+        }
+        @keyframes draw {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+        /* --- Style for the personality indicators list --- */
+        #personalityIndicators ul {
+            list-style: none; /* Remove default bullets */
+            padding-left: 0;
+            margin-top: 0.5rem; /* Add some space above the list */
+        }
+         #personalityIndicators li {
+             padding-left: 1.5em; /* Space for the custom bullet */
+             margin-bottom: 0.5em; /* Space between items */
+             color: var(--text-dark);
+             position: relative; /* Needed for absolute positioning of the pseudo-element */
+             line-height: 1.4; /* Improve readability */
+         }
+         /* Custom bullet point using pseudo-element */
+         #personalityIndicators li::before {
+            content: "▹"; /* Custom bullet shape */
+            color: var(--accent-sage); /* Bullet point color */
+            font-weight: bold;
+            display: inline-block; 
+            position: absolute; /* Position relative to the li */
+            left: 0.5em; /* Adjust position */
+            top: 0;
+         }
+
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <main class="w-full max-w-2xl mx-auto backdrop-blur-lg rounded-2xl shadow-xl p-6 md:p-10 transition-all duration-300" style="background-color: var(--card-light);">
+        <header class="text-center mb-8">
+            <h1 class="text-5xl font-bold" style="color: var(--text-dark);">GraphoGlyph AI</h1>
+            <p class="text-lg mt-2" style="color: var(--text-soft);">Unlock the secrets hidden in your handwriting.</p>
+        </header>
+
+        <!-- Upload Section -->
+        <section id="uploadSection" class="border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300" style="border-color: #d1d5db;">
+            <div id="upload-icon" class="mx-auto h-16 w-16" style="color: var(--text-soft);">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-pen-line"><path d="m18 5-3-3H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2Z"/><path d="M8 18h8"/><path d="m18.4 9.6-4.2 4.2a2 2 0 0 1-2.8 0L9 11.4a2 2 0 1 1 2.8-2.8l4.6 4.6"/><path d="M15 2v4h4"/></svg>
+            </div>
+            <p class="mt-4" style="color: var(--text-soft);">
+                <span class="font-semibold" style="color: var(--accent-sage);">Drag & drop an image</span> or click a button below.
+            </p>
+            <div class="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
+                <label for="fileInput" class="w-full sm:w-auto cursor-pointer inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white transition-all" style="background-color: var(--text-dark);" onmouseover="this.style.backgroundColor='var(--accent-sage)'" onmouseout="this.style.backgroundColor='var(--text-dark)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                    Choose File
+                </label>
+                <label for="cameraInput" class="w-full sm:w-auto cursor-pointer inline-flex items-center justify-center px-6 py-3 border text-base font-medium rounded-md bg-white hover:bg-gray-50 transition-colors" style="color: var(--text-dark); border-color: #d1d5db;">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                    Capture with Camera
+                </label>
+            </div>
+            <input type="file" id="fileInput" accept="image/*">
+            <input type="file" id="cameraInput" accept="image/*" capture="environment">
+        </section>
+        
+        <section id="previewSection" class="hidden text-center fade-in">
+            <h2 class="text-3xl font-bold mb-4" style="color: var(--text-dark);">Image Preview</h2>
+            <img id="imagePreview" src="" alt="Handwriting preview" class="max-w-full max-h-64 rounded-lg shadow-lg mx-auto border-4 border-white">
+            <p id="previewFileName" class="text-gray-600 mt-3"></p>
+            <div class="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
+                <button id="analyzeBtn" class="w-full sm:w-auto cursor-pointer inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white transition-all" style="background-color: var(--accent-sage);" onmouseover="this.style.backgroundColor='#7aaa7a'" onmouseout="this.style.backgroundColor='var(--accent-sage)'">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="m15.5 2-4 4"/><path d="M16 3h5v5"/><path d="M2 12a10 10 0 1 0 10-10"/></svg>
+                    Analyze Now
+                </button>
+                <button id="changeBtn" class="w-full sm:w-auto cursor-pointer inline-flex items-center justify-center px-6 py-3 border text-base font-medium rounded-md bg-white hover:bg-gray-50 transition-colors" style="color: var(--text-dark); border-color: #d1d5db;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M21 21v-5h-5"/></svg>
+                    Choose Another
+                </button>
+            </div>
+        </section>
+        
+        <section id="status" class="mt-6 text-center min-h-[80px]">
+            <div id="loader" class="pen-loader hidden">
+                <svg>
+                    <path class="pen-path" d="M10,20 C40,0 60,0 90,20" stroke="var(--accent-clay)" stroke-width="4" fill="none" stroke-linecap="round"></path>
+                </svg>
+            </div>
+            <p id="errorMessage" class="font-medium" style="color: #d9534f;"></p>
+        </section>
+
+        <!-- Results Section -->
+        <section id="resultsContainer" class="hidden mt-6 fade-in"></section>
+
+    </main>
+    
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const cameraInput = document.getElementById('cameraInput');
+        const loader = document.getElementById('loader');
+        const errorMessage = document.getElementById('errorMessage');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const uploadSection = document.getElementById('uploadSection');
+        
+        const previewSection = document.getElementById('previewSection');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewFileName = document.getElementById('previewFileName');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const changeBtn = document.getElementById('changeBtn');
+
+        let currentFile = null;
+        let chartInstance = null; // To hold the chart instance
+
+        const API_URL = 'http://127.0.0.1:8000/analyze';
+
+        fileInput.addEventListener('change', (e) => prepareFile(e.target.files[0]));
+        cameraInput.addEventListener('change', (e) => prepareFile(e.target.files[0]));
+        analyzeBtn.addEventListener('click', () => analyzeFile(currentFile));
+        changeBtn.addEventListener('click', resetUI);
+
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = 'var(--accent-sage)';
+        });
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.style.borderColor = '#d1d5db';
+        });
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.style.borderColor = '#d1d5db';
+            const file = e.dataTransfer.files[0];
+            prepareFile(file);
+        });
+
+        function prepareFile(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                errorMessage.textContent = 'Please select a valid image file.';
+                return;
+            }
+            currentFile = file;
+            
+            errorMessage.textContent = '';
+            uploadSection.classList.add('hidden');
+            previewSection.classList.remove('hidden');
+            resultsContainer.classList.add('hidden');
+            resultsContainer.innerHTML = '';
+            
+            // Clean up old image object URL
+            if (imagePreview.src) {
+                URL.revokeObjectURL(imagePreview.src);
+            }
+            imagePreview.src = URL.createObjectURL(file);
+            previewFileName.textContent = file.name;
+        }
+        
+        function resetUI() {
+            currentFile = null;
+            fileInput.value = '';
+            cameraInput.value = '';
+            uploadSection.classList.remove('hidden');
+            previewSection.classList.add('hidden');
+            resultsContainer.classList.add('hidden');
+            resultsContainer.innerHTML = '';
+            errorMessage.textContent = '';
+             // Clean up image object URL
+            if (imagePreview.src) {
+                URL.revokeObjectURL(imagePreview.src);
+                imagePreview.src = '';
+            }
+             // Destroy previous chart instance if it exists
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+        }
+
+        async function analyzeFile(file) {
+            if (!file) return;
+
+            loader.classList.remove('hidden');
+            errorMessage.textContent = 'Analyzing... this may take a moment.';
+            errorMessage.style.color = 'var(--text-soft)';
+            analyzeBtn.disabled = true;
+            changeBtn.disabled = true;
+            
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Analysis failed. Please try another image.');
+                }
+
+                const data = await response.json();
+                displayResults(data);
+                resultsContainer.classList.remove('hidden');
+                errorMessage.textContent = '';
+
+            } catch (error) {
+                errorMessage.textContent = `Error: ${error.message}`;
+                errorMessage.style.color = '#d9534f';
+            } finally {
+                loader.classList.add('hidden');
+                analyzeBtn.disabled = false;
+                changeBtn.disabled = false;
+            }
+        }
+        
+        // --- UPDATED displayResults function ---
+        function displayResults(data) {
+             // Destroy previous chart instance if it exists
+            if (chartInstance) {
+                chartInstance.destroy();
+                chartInstance = null;
+            }
+            
+            // Display Personality Summary (Brief text)
+            let personalitySummaryHTML = '';
+            if (data.diagnostics && data.diagnostics.personality_summary) {
+                personalitySummaryHTML = `
+                    <div class="bg-white/60 p-6 rounded-xl shadow-md text-center mb-6">
+                        <h4 class="text-xl font-bold mb-2" style="color: var(--text-dark);">Personality Summary</h4>
+                        <p class="text-lg" style="color: var(--accent-clay); font-family: 'Playfair Display', serif;">
+                            "${data.diagnostics.personality_summary}"
+                        </p>
+                    </div>
+                `;
+            }
+
+            resultsContainer.innerHTML = `
+                ${personalitySummaryHTML} 
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white/60 p-6 rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold mb-4" style="color: var(--text-dark);">Trait Analysis</h3>
+                        <div id="traitList" class="space-y-4"></div>
+                    </div>
+                    <div class="bg-white/60 p-6 rounded-xl shadow-md flex flex-col items-center min-h-[350px]">
+                         <h3 class="text-2xl font-bold mb-4" style="color: var(--text-dark);">Visual Profile</h3> 
+                         <div class="relative w-full h-full max-w-[300px]"> 
+                            <canvas id="radarChart"></canvas>
+                         </div>
+                    </div>
+                </div>
+                <div id="diagnosticsDetails" class="mt-6 bg-white/60 p-6 rounded-xl shadow-md"></div> 
+            `;
+            
+            const traitList = document.getElementById('traitList');
+            const diagnosticsDetailsContainer = document.getElementById('diagnosticsDetails'); 
+            
+            const traitDisplayOrder = {
+                'total_loops': 'Total Loops (Est.)', 
+                'total_correct_diacritics': 'Correct Diacritics (Est.)', 
+                'total_correct_t_crossings': 'Correct T-Crossings (Est.)', 
+                'spacing_mean_char': 'Spacing Mean Char',
+                'spacing_std_char': 'Spacing Std Char',
+                'spacing_mean_word': 'Spacing Mean Word',
+                'spacing_std_word': 'Spacing Std Word',
+                'pen_lifts_per_word': 'Pen Lifts Per Word',
+                'retouching_index': 'Retouching Index',
+                'tremor_index': 'Tremor Index',
+                'slant_degrees': 'Slant Degrees (CV)' // Indicate CV calculation
+            };
+
+            for (const key in traitDisplayOrder) {
+                 if (data.hasOwnProperty(key)) { 
+                    traitList.innerHTML += createTraitItem(key, data[key], traitDisplayOrder[key]);
+                }
+            }
+            
+            // --- UPDATED: Display Technical Diagnostics, Detailed Indicators & OCEAN Scores ---
+            if (data.diagnostics) {
+                let techSummaryHTML = data.diagnostics.overall_summary ? `
+                    <div class="mb-4 text-center border-b pb-4" style="border-color: rgba(0,0,0,0.1);">
+                        <p class="text-sm font-medium" style="color: var(--text-soft);">Technical Summary</p>
+                        <p style="color: var(--text-dark);">${data.diagnostics.overall_summary}</p>
+                    </div>` : '';
+
+                let techDetailsHTML = `
+                    <div class="grid grid-cols-3 gap-4 mb-6 text-center">
+                        <div>
+                            <p class="text-sm" style="color: var(--text-soft);">Total Chars (OCR)</p> 
+                            <p class="font-bold text-lg" style="color: var(--text-dark);">${data.diagnostics.total_chars ?? 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm" style="color: var(--text-soft);">Est. Pressure</p>
+                            <p class="font-bold text-lg capitalize" style="color: var(--text-dark);">${data.diagnostics.estimated_pressure ?? 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p class="text-sm" style="color: var(--text-soft);">Baseline</p>
+                            <p class="font-bold text-lg capitalize" style="color: var(--text-dark);">${data.diagnostics.baseline_consistency ?? 'N/A'}</p>
+                        </div>
+                    </div>`;
+                
+                // Display Personality Indicators (Detailed Text)
+                let personalityIndicatorsHTML = '';
+                if (data.diagnostics.personality_indicators) {
+                    const indicatorsList = data.diagnostics.personality_indicators
+                        .split('\n') 
+                        .map(line => line.trim()) 
+                        .filter(line => line.startsWith('- ')) 
+                        .map(line => `<li>${line.substring(2)}</li>`) 
+                        .join('');
+                    
+                    personalityIndicatorsHTML = `
+                        <div class="mb-6 border-b pb-6" style="border-color: rgba(0,0,0,0.1);">
+                             <h4 class="text-xl font-bold mb-3 text-center" style="color: var(--text-dark);">Personality Indicators</h4>
+                             <div id="personalityIndicators" class="text-left">
+                                 <ul>${indicatorsList || '<li>No specific indicators generated.</li>'}</ul>
+                             </div>
+                         </div>
+                    `;
+                }
+
+
+                // Display OCEAN Scores Grid
+                let oceanScoresHTML = '<h4 class="text-xl font-bold mb-4 text-center" style="color: var(--text-dark);">OCEAN Scores (Scale 1-5)</h4><div class="grid grid-cols-5 gap-2 text-center">';
+                const oceanTraits = ['Openness', 'Conscientiousness', 'Extraversion', 'Agreeableness', 'Neuroticism'];
+                oceanTraits.forEach(trait => {
+                    // Check if the trait score exists before trying to format
+                    const score = data.diagnostics.hasOwnProperty(trait) ? data.diagnostics[trait] : null; 
+                    oceanScoresHTML += `
+                        <div class="p-2 rounded-lg bg-gray-50/50">
+                            <p class="text-sm font-medium" style="color: var(--text-soft);">${trait}</p>
+                            <p class="font-bold text-lg" style="color: var(--text-dark);">${score !== null ? score.toFixed(1) : 'N/A'}</p>
+                        </div>
+                    `;
+                });
+                oceanScoresHTML += '</div>';
+
+                // Combine all parts for Diagnostics Details section
+                diagnosticsDetailsContainer.innerHTML = `
+                    <h3 class="text-2xl font-bold mb-4" style="color: var(--text-dark);">Diagnostics Details</h3>
+                    ${techSummaryHTML}
+                    ${techDetailsHTML}
+                    ${personalityIndicatorsHTML} 
+                    ${oceanScoresHTML} 
+                `; 
+            }
+            
+            createRadarChart(data); // Keep chart for visual summary 
+        }
+        
+        function createTraitItem(key, value, displayLabel) {
+            const label = displayLabel || formatLabel(key); 
+            let formattedValue;
+            // Format counts as integers, floats with 2 decimals otherwise
+            if (key === 'total_correct_diacritics' || key === 'total_correct_t_crossings' || key === 'total_loops') {
+                 formattedValue = (value !== null && value !== undefined) ? Math.round(value) : 'N/A'; // Round counts
+            } else {
+                 formattedValue = (typeof value === 'number') ? value.toFixed(2) : (value ?? 'N/A');
+            }
+            
+            return `
+                <div class="flex justify-between items-baseline border-b pb-2" style="border-color: rgba(0,0,0,0.08);">
+                    <span class="font-medium flex-1" style="color: var(--text-soft);">${label}</span>
+                    <span class="font-bold text-xl text-right" style="color: var(--text-dark);">${formattedValue}</span>
+                </div>
+            `;
+        }
+
+        function formatLabel(key) {
+            // Fallback formatting
+            return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        }
+        
+        // --- UPDATED: createRadarChart now uses 1-5 scale input ---
+        function createRadarChart(data) {
+             const ctx = document.getElementById('radarChart')?.getContext('2d');
+             if (!ctx) return; 
+
+            // Use OCEAN scores directly from diagnostics if available
+            const oceanScores = data.diagnostics || {};
+            // Use 1-5 scale scores, default to 3 (neutral)
+            const openness = oceanScores.Openness ?? 3.0;
+            const conscientiousness = oceanScores.Conscientiousness ?? 3.0;
+            const extraversion = oceanScores.Extraversion ?? 3.0;
+            const agreeableness = oceanScores.Agreeableness ?? 3.0;
+            const neuroticism = oceanScores.Neuroticism ?? 3.0;
+
+            // Map scores from [1, 5] range to [0, 1] range for the chart
+            // (1 -> 0, 3 -> 0.5, 5 -> 1)
+            const mapScore = (score) => (score - 1) / 4;
+            
+            // Derive chart points from OCEAN scores
+            const organized = mapScore(conscientiousness); 
+            const creative = mapScore(openness);
+            const social = mapScore(extraversion);
+            const disciplined = mapScore(conscientiousness); 
+            // Simplified energetic: more E, less N contributes positively
+            // Map E and N to [0, 1] first, then combine
+            const energetic = (mapScore(extraversion) + (1 - mapScore(neuroticism))) / 2; 
+
+            chartInstance = new Chart(ctx, { // Assign to global variable
+                type: 'radar',
+                data: {
+                    labels: ['Organized', 'Creative', 'Social', 'Disciplined', 'Energetic'],
+                    datasets: [{
+                        label: 'Visual Profile', 
+                        data: [organized, creative, social, disciplined, energetic],
+                        backgroundColor: 'rgba(143, 188, 143, 0.3)',
+                        borderColor: 'rgba(143, 188, 143, 1)',
+                        pointBackgroundColor: 'rgba(143, 188, 143, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(143, 188, 143, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, 
+                    layout: { padding: 5 },
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0,0,0,0.1)' },
+                            grid: { color: 'rgba(0,0,0,0.1)' },
+                            pointLabels: { 
+                                padding: 15, 
+                                font: { size: 13, family: "'Playfair Display', serif" }, 
+                                color: 'var(--text-dark)' 
+                            },
+                            ticks: { 
+                                display: false, 
+                                stepSize: 0.25, // For 0 to 1 scale
+                                beginAtZero: true, 
+                                max: 1 // Max is now 1
+                            } 
+                        }
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
