@@ -1,2 +1,5 @@
 # Virtual Environment
 .venv/
+# BFG Cleanup Files
+..bfg-report/
+bfg-1.15.0.jar
