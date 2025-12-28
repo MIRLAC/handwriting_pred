@@ -6,7 +6,7 @@ const errorMessage = document.getElementById('errorMessage');
 const resultsContainer = document.getElementById('resultsContainer');
 
 // Define the URL of your backend endpoint
-const API_URL = 'http://127.0.0.1:8000/analyze';
+const API_URL = 'http://127.0.0.1:8000/analyze/image';
 
 // Add a click event listener to the "Analyze" button
 analyzeBtn.addEventListener('click', async () => {

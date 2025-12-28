@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GraphoGlyph AI - Handwriting Analyzer</title>
     
-    <!-- Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Chart.js for the radar chart -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Google Fonts: Inter and a serif font for headings -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
@@ -102,7 +99,6 @@
             <p class="text-lg mt-2" style="color: var(--text-soft);">Unlock the secrets hidden in your handwriting.</p>
         </header>
 
-        <!-- Upload Section -->
         <section id="uploadSection" class="border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300" style="border-color: #d1d5db;">
             <div id="upload-icon" class="mx-auto h-16 w-16" style="color: var(--text-soft);">
                 <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-pen-line"><path d="m18 5-3-3H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2Z"/><path d="M8 18h8"/><path d="m18.4 9.6-4.2 4.2a2 2 0 0 1-2.8 0L9 11.4a2 2 0 1 1 2.8-2.8l4.6 4.6"/><path d="M15 2v4h4"/></svg>
@@ -149,7 +145,6 @@
             <p id="errorMessage" class="font-medium" style="color: #d9534f;"></p>
         </section>
 
-        <!-- Results Section -->
         <section id="resultsContainer" class="hidden mt-6 fade-in"></section>
 
     </main>
@@ -171,7 +166,8 @@
         let currentFile = null;
         let chartInstance = null; // To hold the chart instance
 
-        const API_URL = 'http://127.0.0.1:8000/analyze';
+        // --- UPDATED API ENDPOINT FOR IMAGE ANALYSIS ---
+        const API_URL = 'http://127.0.0.1:8000/analyze/image';
 
         fileInput.addEventListener('change', (e) => prepareFile(e.target.files[0]));
         cameraInput.addEventListener('change', (e) => prepareFile(e.target.files[0]));
@@ -205,7 +201,6 @@
             resultsContainer.classList.add('hidden');
             resultsContainer.innerHTML = '';
             
-            // Clean up old image object URL
             if (imagePreview.src) {
                 URL.revokeObjectURL(imagePreview.src);
             }
@@ -222,12 +217,10 @@
             resultsContainer.classList.add('hidden');
             resultsContainer.innerHTML = '';
             errorMessage.textContent = '';
-             // Clean up image object URL
             if (imagePreview.src) {
                 URL.revokeObjectURL(imagePreview.src);
                 imagePreview.src = '';
             }
-             // Destroy previous chart instance if it exists
             if (chartInstance) {
                 chartInstance.destroy();
                 chartInstance = null;
@@ -238,7 +231,7 @@
             if (!file) return;
 
             loader.classList.remove('hidden');
-            errorMessage.textContent = 'Analyzing... this may take a moment.';
+            errorMessage.textContent = 'Processing with Computer Vision...';
             errorMessage.style.color = 'var(--text-soft)';
             analyzeBtn.disabled = true;
             changeBtn.disabled = true;
@@ -258,11 +251,13 @@
                 }
 
                 const data = await response.json();
+                console.log("Backend Response:", data); // Debugging line
                 displayResults(data);
                 resultsContainer.classList.remove('hidden');
                 errorMessage.textContent = '';
 
             } catch (error) {
+                console.error(error);
                 errorMessage.textContent = `Error: ${error.message}`;
                 errorMessage.style.color = '#d9534f';
             } finally {
@@ -272,22 +267,21 @@
             }
         }
         
-        // --- UPDATED displayResults function ---
+        // --- UPDATED displayResults for NEW BACKEND STRUCTURE ---
         function displayResults(data) {
-             // Destroy previous chart instance if it exists
             if (chartInstance) {
                 chartInstance.destroy();
                 chartInstance = null;
             }
             
-            // Display Personality Summary (Brief text)
+            // 1. Summary Section (Now located at data.summary)
             let personalitySummaryHTML = '';
-            if (data.diagnostics && data.diagnostics.personality_summary) {
+            if (data.summary) {
                 personalitySummaryHTML = `
                     <div class="bg-white/60 p-6 rounded-xl shadow-md text-center mb-6">
                         <h4 class="text-xl font-bold mb-2" style="color: var(--text-dark);">Personality Summary</h4>
                         <p class="text-lg" style="color: var(--accent-clay); font-family: 'Playfair Display', serif;">
-                            "${data.diagnostics.personality_summary}"
+                            "${data.summary}"
                         </p>
                     </div>
                 `;
@@ -310,111 +304,77 @@
                 <div id="diagnosticsDetails" class="mt-6 bg-white/60 p-6 rounded-xl shadow-md"></div> 
             `;
             
+            // 2. Trait Analysis (Now reading from data.metrics)
             const traitList = document.getElementById('traitList');
             const diagnosticsDetailsContainer = document.getElementById('diagnosticsDetails'); 
             
+            // Mapping valid metric keys for display
             const traitDisplayOrder = {
-                'total_loops': 'Total Loops (Est.)', 
-                'total_correct_diacritics': 'Correct Diacritics (Est.)', 
-                'total_correct_t_crossings': 'Correct T-Crossings (Est.)', 
-                'spacing_mean_char': 'Spacing Mean Char',
-                'spacing_std_char': 'Spacing Std Char',
-                'spacing_mean_word': 'Spacing Mean Word',
-                'spacing_std_word': 'Spacing Std Word',
-                'pen_lifts_per_word': 'Pen Lifts Per Word',
+                'total_loops': 'Total Loops', 
+                'slant_degrees': 'Slant Angle (°)', 
+                'spacing_mean_word': 'Avg Word Spacing (px)',
+                'pressure_index': 'Pressure Index (0-1)',
                 'retouching_index': 'Retouching Index',
-                'tremor_index': 'Tremor Index',
-                'slant_degrees': 'Slant Degrees (CV)' // Indicate CV calculation
+                'tremor_index': 'Tremor Index'
             };
 
+            const metrics = data.metrics || {};
+
             for (const key in traitDisplayOrder) {
-                 if (data.hasOwnProperty(key)) { 
-                    traitList.innerHTML += createTraitItem(key, data[key], traitDisplayOrder[key]);
+                 if (metrics.hasOwnProperty(key)) { 
+                    traitList.innerHTML += createTraitItem(key, metrics[key], traitDisplayOrder[key]);
                 }
             }
             
-            // --- UPDATED: Display Technical Diagnostics, Detailed Indicators & OCEAN Scores ---
-            if (data.diagnostics) {
-                let techSummaryHTML = data.diagnostics.overall_summary ? `
-                    <div class="mb-4 text-center border-b pb-4" style="border-color: rgba(0,0,0,0.1);">
-                        <p class="text-sm font-medium" style="color: var(--text-soft);">Technical Summary</p>
-                        <p style="color: var(--text-dark);">${data.diagnostics.overall_summary}</p>
-                    </div>` : '';
-
-                let techDetailsHTML = `
-                    <div class="grid grid-cols-3 gap-4 mb-6 text-center">
-                        <div>
-                            <p class="text-sm" style="color: var(--text-soft);">Total Chars (OCR)</p> 
-                            <p class="font-bold text-lg" style="color: var(--text-dark);">${data.diagnostics.total_chars ?? 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm" style="color: var(--text-soft);">Est. Pressure</p>
-                            <p class="font-bold text-lg capitalize" style="color: var(--text-dark);">${data.diagnostics.estimated_pressure ?? 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p class="text-sm" style="color: var(--text-soft);">Baseline</p>
-                            <p class="font-bold text-lg capitalize" style="color: var(--text-dark);">${data.diagnostics.baseline_consistency ?? 'N/A'}</p>
-                        </div>
-                    </div>`;
+            // 3. Diagnostics / Indicators (Now reading from data.indicators)
+            // Indicators are now a LIST of strings, not a single string
+            let personalityIndicatorsHTML = '';
+            if (data.indicators && data.indicators.length > 0) {
+                const indicatorsList = data.indicators
+                    .map(line => `<li>${line}</li>`) 
+                    .join('');
                 
-                // Display Personality Indicators (Detailed Text)
-                let personalityIndicatorsHTML = '';
-                if (data.diagnostics.personality_indicators) {
-                    const indicatorsList = data.diagnostics.personality_indicators
-                        .split('\n') 
-                        .map(line => line.trim()) 
-                        .filter(line => line.startsWith('- ')) 
-                        .map(line => `<li>${line.substring(2)}</li>`) 
-                        .join('');
-                    
-                    personalityIndicatorsHTML = `
-                        <div class="mb-6 border-b pb-6" style="border-color: rgba(0,0,0,0.1);">
-                             <h4 class="text-xl font-bold mb-3 text-center" style="color: var(--text-dark);">Personality Indicators</h4>
-                             <div id="personalityIndicators" class="text-left">
-                                 <ul>${indicatorsList || '<li>No specific indicators generated.</li>'}</ul>
-                             </div>
+                personalityIndicatorsHTML = `
+                    <div class="mb-6 border-b pb-6" style="border-color: rgba(0,0,0,0.1);">
+                         <h4 class="text-xl font-bold mb-3 text-center" style="color: var(--text-dark);">Key Indicators</h4>
+                         <div id="personalityIndicators" class="text-left">
+                             <ul>${indicatorsList}</ul>
                          </div>
-                    `;
-                }
-
-
-                // Display OCEAN Scores Grid
-                let oceanScoresHTML = '<h4 class="text-xl font-bold mb-4 text-center" style="color: var(--text-dark);">OCEAN Scores (Scale 1-5)</h4><div class="grid grid-cols-5 gap-2 text-center">';
-                const oceanTraits = ['Openness', 'Conscientiousness', 'Extraversion', 'Agreeableness', 'Neuroticism'];
-                oceanTraits.forEach(trait => {
-                    // Check if the trait score exists before trying to format
-                    const score = data.diagnostics.hasOwnProperty(trait) ? data.diagnostics[trait] : null; 
-                    oceanScoresHTML += `
-                        <div class="p-2 rounded-lg bg-gray-50/50">
-                            <p class="text-sm font-medium" style="color: var(--text-soft);">${trait}</p>
-                            <p class="font-bold text-lg" style="color: var(--text-dark);">${score !== null ? score.toFixed(1) : 'N/A'}</p>
-                        </div>
-                    `;
-                });
-                oceanScoresHTML += '</div>';
-
-                // Combine all parts for Diagnostics Details section
-                diagnosticsDetailsContainer.innerHTML = `
-                    <h3 class="text-2xl font-bold mb-4" style="color: var(--text-dark);">Diagnostics Details</h3>
-                    ${techSummaryHTML}
-                    ${techDetailsHTML}
-                    ${personalityIndicatorsHTML} 
-                    ${oceanScoresHTML} 
-                `; 
+                     </div>
+                `;
+            } else {
+                 personalityIndicatorsHTML = `<p class="text-center text-gray-500 mb-6">No specific indicators found.</p>`;
             }
+
+
+            // 4. OCEAN Scores (Now reading from data.ocean_scores)
+            let oceanScoresHTML = '<h4 class="text-xl font-bold mb-4 text-center" style="color: var(--text-dark);">OCEAN Scores (1-5)</h4><div class="grid grid-cols-5 gap-2 text-center">';
+            const oceanTraits = ['Openness', 'Conscientiousness', 'Extraversion', 'Agreeableness', 'Neuroticism'];
+            const scores = data.ocean_scores || {};
+
+            oceanTraits.forEach(trait => {
+                const score = scores[trait] !== undefined ? scores[trait] : 3.0; 
+                oceanScoresHTML += `
+                    <div class="p-2 rounded-lg bg-gray-50/50">
+                        <p class="text-sm font-medium" style="color: var(--text-soft);">${trait}</p>
+                        <p class="font-bold text-lg" style="color: var(--text-dark);">${score.toFixed(1)}</p>
+                    </div>
+                `;
+            });
+            oceanScoresHTML += '</div>';
+
+            diagnosticsDetailsContainer.innerHTML = `
+                <h3 class="text-2xl font-bold mb-4" style="color: var(--text-dark);">Detailed Diagnostics</h3>
+                ${personalityIndicatorsHTML} 
+                ${oceanScoresHTML} 
+            `; 
             
-            createRadarChart(data); // Keep chart for visual summary 
+            createRadarChart(data); 
         }
         
         function createTraitItem(key, value, displayLabel) {
-            const label = displayLabel || formatLabel(key); 
-            let formattedValue;
-            // Format counts as integers, floats with 2 decimals otherwise
-            if (key === 'total_correct_diacritics' || key === 'total_correct_t_crossings' || key === 'total_loops') {
-                 formattedValue = (value !== null && value !== undefined) ? Math.round(value) : 'N/A'; // Round counts
-            } else {
-                 formattedValue = (typeof value === 'number') ? value.toFixed(2) : (value ?? 'N/A');
-            }
+            const label = displayLabel || key; 
+            let formattedValue = (typeof value === 'number') ? value.toFixed(2) : (value ?? 'N/A');
             
             return `
                 <div class="flex justify-between items-baseline border-b pb-2" style="border-color: rgba(0,0,0,0.08);">
@@ -423,40 +383,29 @@
                 </div>
             `;
         }
-
-        function formatLabel(key) {
-            // Fallback formatting
-            return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-        }
         
-        // --- UPDATED: createRadarChart now uses 1-5 scale input ---
+        // --- UPDATED Radar Chart for New Structure ---
         function createRadarChart(data) {
              const ctx = document.getElementById('radarChart')?.getContext('2d');
              if (!ctx) return; 
 
-            // Use OCEAN scores directly from diagnostics if available
-            const oceanScores = data.diagnostics || {};
-            // Use 1-5 scale scores, default to 3 (neutral)
-            const openness = oceanScores.Openness ?? 3.0;
-            const conscientiousness = oceanScores.Conscientiousness ?? 3.0;
-            const extraversion = oceanScores.Extraversion ?? 3.0;
-            const agreeableness = oceanScores.Agreeableness ?? 3.0;
-            const neuroticism = oceanScores.Neuroticism ?? 3.0;
+            const scores = data.ocean_scores || {};
+            const openness = scores.Openness ?? 3.0;
+            const conscientiousness = scores.Conscientiousness ?? 3.0;
+            const extraversion = scores.Extraversion ?? 3.0;
+            const agreeableness = scores.Agreeableness ?? 3.0;
+            const neuroticism = scores.Neuroticism ?? 3.0;
 
-            // Map scores from [1, 5] range to [0, 1] range for the chart
-            // (1 -> 0, 3 -> 0.5, 5 -> 1)
+            // Map 1-5 scale to 0-1 for chart visualization
             const mapScore = (score) => (score - 1) / 4;
             
-            // Derive chart points from OCEAN scores
             const organized = mapScore(conscientiousness); 
             const creative = mapScore(openness);
             const social = mapScore(extraversion);
             const disciplined = mapScore(conscientiousness); 
-            // Simplified energetic: more E, less N contributes positively
-            // Map E and N to [0, 1] first, then combine
             const energetic = (mapScore(extraversion) + (1 - mapScore(neuroticism))) / 2; 
 
-            chartInstance = new Chart(ctx, { // Assign to global variable
+            chartInstance = new Chart(ctx, { 
                 type: 'radar',
                 data: {
                     labels: ['Organized', 'Creative', 'Social', 'Disciplined', 'Energetic'],
@@ -486,9 +435,9 @@
                             },
                             ticks: { 
                                 display: false, 
-                                stepSize: 0.25, // For 0 to 1 scale
+                                stepSize: 0.25, 
                                 beginAtZero: true, 
-                                max: 1 // Max is now 1
+                                max: 1 
                             } 
                         }
                     },
