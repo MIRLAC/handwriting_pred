@@ -8,19 +8,19 @@ import shutil
 import os
 import sys
 
-# --- 1. SETUP LOGGING (Windows-Safe) ---
+# --- 1. SETUP LOGGING ---
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - [%(levelname)s] - %(message)s',
+    format='%(asctime)s | %(levelname)-8s | %(message)s',
+    datefmt='%H:%M:%S',
     handlers=[
-        logging.FileHandler("server.log", encoding='utf-8'),
+        logging.FileHandler("server_debug.log", encoding='utf-8'),
         logging.StreamHandler(sys.stdout)
     ]
 )
 
 app = FastAPI()
 
-# --- 2. ENABLE CORS ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -29,307 +29,298 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- 3. FEATURE EXTRACTION LOGIC ---
+# --- 2. ADVANCED CV ALGORITHMS ---
 class HandwritingFeatures:
     def __init__(self, image_path):
+        logging.info(f"--- [START] Processing: {image_path} ---")
         self.image_path = image_path
-        original_img = cv2.imread(image_path)
-        if original_img is None:
-            raise ValueError("Image not found.")
-            
-        # Normalization
-        height, width = original_img.shape[:2]
-        target_width = 1000
-        scale = target_width / width
-        new_height = int(height * scale)
-        self.original = cv2.resize(original_img, (target_width, new_height))
+        
+        # 1. Load & Normalize
+        img = cv2.imread(image_path)
+        if img is None: raise ValueError("Image not found")
+        
+        # Resize to fixed width (1200px) for consistent measurement scale
+        h, w = img.shape[:2]
+        scale = 1200 / w
+        self.original = cv2.resize(img, (1200, int(h * scale)))
+        
+        # 2. Binarization (Otsu's Method is better for global structure)
         self.gray = cv2.cvtColor(self.original, cv2.COLOR_BGR2GRAY)
+        self.binary = cv2.threshold(self.gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
         
-        # Detail Layer
-        self.blur_detail = cv2.GaussianBlur(self.gray, (1, 1), 0)
-        self.thresh_detail = cv2.adaptiveThreshold(
-            self.blur_detail, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-            cv2.THRESH_BINARY_INV, 21, 10
-        )
-        self.contours_detail, self.hierarchy_detail = cv2.findContours(
-            self.thresh_detail, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
-        )
+        # 3. Skeletonization (Thinning) - Critical for Stroke Counting
+        # Reduces ink to single-pixel wide lines
+        # Check if ximgproc is available (opencv-contrib-python), else fallback
+        try:
+            self.skeleton = cv2.ximgproc.thinning(self.binary)
+        except AttributeError:
+            self.skeleton = self._fallback_skeleton(self.binary)
+        
+        # 4. Calculate Global Baselines
+        self.avg_line_height = self._get_avg_line_height()
+        logging.info(f"   > Avg Line Height (Px): {self.avg_line_height}")
 
-        # Structure Layer
-        self.blur_struct = cv2.GaussianBlur(self.gray, (5, 5), 0)
-        self.thresh_struct = cv2.adaptiveThreshold(
-            self.blur_struct, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
-            cv2.THRESH_BINARY_INV, 25, 15
-        )
-        kernel = np.ones((3,3), np.uint8)
-        self.thresh_struct = cv2.morphologyEx(self.thresh_struct, cv2.MORPH_OPEN, kernel, iterations=1)
-        self.contours_struct, _ = cv2.findContours(
-            self.thresh_struct, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
-        )
+    def _fallback_skeleton(self, img):
+        """Standard thinning algorithm if ximgproc is missing."""
+        skeleton = np.zeros(img.shape, np.uint8)
+        eroded = img.copy()
+        kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3))
+        while True:
+            temp = cv2.morphologyEx(eroded, cv2.MORPH_OPEN, kernel)
+            temp = cv2.subtract(eroded, temp)
+            skeleton = cv2.bitwise_or(skeleton, temp)
+            eroded = cv2.erode(eroded, kernel)
+            if cv2.countNonZero(eroded) == 0: break
+        return skeleton
 
-        # State for advanced metrics
-        self.loop_circularities = []
-        self.spacing_variances = []
+    def _get_avg_line_height(self):
+        """Uses Horizontal Projection Profile to find text lines accurately."""
+        # Sum pixels along rows (Horizontal Projection)
+        proj = np.sum(self.binary, axis=1)
+        
+        # Find continuous runs of non-zero pixels (Text Lines)
+        lines = []
+        in_line = False
+        start = 0
+        for y, val in enumerate(proj):
+            if val > 0 and not in_line:
+                in_line = True
+                start = y
+            elif val == 0 and in_line:
+                in_line = False
+                height = y - start
+                if height > 10: # Min line height threshold
+                    lines.append(height)
+        
+        return np.median(lines) if lines else 50.0
 
-    def get_loops(self):
-        count = 0
-        self.loop_circularities = [] # Reset
-        if self.hierarchy_detail is not None:
-            for i in range(len(self.contours_detail)):
-                if self.hierarchy_detail[0][i][3] != -1:
-                    c = self.contours_detail[i]
-                    area = cv2.contourArea(c)
-                    if 40 < area < 1000:
-                        perimeter = cv2.arcLength(c, True)
-                        if perimeter == 0: continue
-                        circularity = (4 * np.pi * area) / (perimeter ** 2)
-                        
-                        hull = cv2.convexHull(c)
-                        hull_area = cv2.contourArea(hull)
-                        if hull_area == 0: continue
-                        solidity = area / hull_area
-                        
-                        if circularity > 0.4 and solidity > 0.6:
-                            count += 1
-                            self.loop_circularities.append(circularity)
-        return count
+    def _clamp(self, val):
+        return max(0.0, min(1.0, float(val)))
 
-    def get_diacritics(self):
-        count = 0
-        if not self.contours_detail: return 0
-        areas = [cv2.contourArea(c) for c in self.contours_detail]
-        mean_area = np.mean(areas) if areas else 50
-        for c in self.contours_detail:
-            area = cv2.contourArea(c)
-            if 10 < area < (mean_area * 0.5):
-                hull = cv2.convexHull(c)
-                hull_area = cv2.contourArea(hull)
-                if hull_area == 0: continue
-                solidity = area / hull_area
-                if solidity > 0.5:
-                    count += 1
-        return count
-
+    # --- FEATURE 1: TREMORS (Smoothness Ratio) ---
     def get_tremors(self):
-        score = 0
-        valid_contours = 0
-        for c in self.contours_detail:
-            if cv2.contourArea(c) > 50:
-                valid_contours += 1
-                perimeter = cv2.arcLength(c, True)
-                approx = cv2.approxPolyDP(c, 0.04 * perimeter, True)
-                score += len(approx) / (len(c) + 1)
-        return round(score / valid_contours, 4) if valid_contours > 0 else 0
-
-    def get_embellishments(self):
+        """Compares rough contour perimeter vs smooth hull perimeter."""
+        contours, _ = cv2.findContours(self.binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
         scores = []
-        for c in self.contours_detail:
-            area = cv2.contourArea(c)
-            if area > 30:
-                perimeter = cv2.arcLength(c, True)
-                if perimeter > 0:
-                    circularity = (4 * np.pi * area) / (perimeter ** 2)
-                    scores.append(1 - circularity)
-        return round(np.mean(scores), 4) if scores else 0
+        for c in contours:
+            if cv2.contourArea(c) > 100:
+                # 1. Real Perimeter (Jagged)
+                real_perim = cv2.arcLength(c, True)
+                
+                # 2. Smooth Perimeter (Convex Hull)
+                hull = cv2.convexHull(c)
+                smooth_perim = cv2.arcLength(hull, True)
+                
+                if smooth_perim > 0:
+                    # Ratio: 1.0 = Perfect Smoothness (Circle/Oval)
+                    # Higher = More Jitter/Tremor
+                    roughness = (real_perim / smooth_perim) - 1.0
+                    scores.append(roughness)
+        
+        if not scores: return 0.0
+        
+        avg_roughness = np.mean(scores)
+        # Normalize: 0.0 (Smooth) to 0.2 (Very Shaky) scaled to 0-1
+        # Multiplier adjusted for sensitivity
+        return self._clamp(avg_roughness * 5.0)
 
-    def get_word_spacing_stats(self):
-        # Returns (Mean Spacing, Standard Deviation)
-        kernel = np.ones((4, 10), np.uint8) 
-        dilated = cv2.dilate(self.thresh_struct, kernel, iterations=1)
-        word_contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # --- FEATURE 2: PEN LIFTS (Skeleton Discontinuities) ---
+    def get_pen_lifts_score(self):
+        """Counts connected components in the SKELETON, not the thick ink."""
+        # 1. Count separate strokes in skeleton
+        num_strokes, _ = cv2.connectedComponents(self.skeleton)
         
-        boxes = [cv2.boundingRect(c) for c in word_contours if cv2.contourArea(c) > 100]
-        boxes.sort(key=lambda x: x[1])
+        # 2. Count distinct words (using dilation to merge letters)
+        kernel = np.ones((5, 15), np.uint8) # Wide kernel merges letters
+        dilated = cv2.dilate(self.binary, kernel, iterations=2)
+        num_words, _ = cv2.connectedComponents(dilated)
         
-        lines = {}
-        for box in boxes:
-            y_center = box[1] + box[3]//2
-            found = False
-            for y_key in lines:
-                if abs(y_key - y_center) < 20: 
-                    lines[y_key].append(box)
-                    found = True
-                    break
-            if not found:
-                lines[y_center] = [box]
+        if num_words <= 1: return 0.5 # Default fallback
+        
+        # Ratio: Strokes / Words
+        # Cursive: ~1.2 strokes/word | Print: ~3-4 strokes/word
+        ratio = num_strokes / num_words
+        
+        # Normalize: Map ratio 1.0->4.0 to 0.0->1.0
+        norm = (ratio - 1.0) / 3.0
+        return self._clamp(norm)
+
+    # --- FEATURE 3: WORD SPACING (Projection Distance) ---
+    def get_word_spacing_score(self):
+        """Measures distance between word blobs on the same line."""
+        # 1. Merge letters into words
+        kernel = np.ones((3, 12), np.uint8)
+        dilated = cv2.dilate(self.binary, kernel, iterations=2)
+        contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        # 2. Collect bounding boxes
+        boxes = [cv2.boundingRect(c) for c in contours if cv2.contourArea(c) > 200]
+        boxes.sort(key=lambda b: (b[1] // (self.avg_line_height/2), b[0])) # Sort by Line then X
         
         spacings = []
-        for y_key in lines:
-            line = sorted(lines[y_key], key=lambda x: x[0])
-            for i in range(len(line) - 1):
-                dist = line[i+1][0] - (line[i][0] + line[i][2])
-                if 5 < dist < 300: 
+        for i in range(len(boxes) - 1):
+            curr = boxes[i]
+            next_b = boxes[i+1]
+            
+            # Check if on same line (Y difference is small)
+            y_diff = abs((curr[1] + curr[3]/2) - (next_b[1] + next_b[3]/2))
+            if y_diff < self.avg_line_height * 0.5:
+                # Calculate horizontal gap
+                dist = next_b[0] - (curr[0] + curr[2])
+                if 0 < dist < self.avg_line_height * 3: # valid gap
                     spacings.append(dist)
         
-        if not spacings: return 0, 0
-        return round(np.mean(spacings), 2), round(np.std(spacings), 2)
-
-    def get_pen_lifts(self):
-        valid_strokes = [c for c in self.contours_detail if cv2.contourArea(c) > 15]
-        return len(valid_strokes)
-
-    def get_t_crossings(self):
-        lines = cv2.HoughLinesP(self.thresh_struct, 1, np.pi / 180, 
-                               threshold=50, minLineLength=15, maxLineGap=3)
-        count = 0
-        if lines is not None:
-            for line in lines:
-                x1, y1, x2, y2 = line[0]
-                length = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-                angle = np.abs(np.degrees(np.arctan2(y2 - y1, x2 - x1)))
-                if angle < 20 and 15 < length < 60:
-                    count += 1
-        return count
-
-    def get_retouching(self):
-        edges = cv2.Canny(self.blur_detail, 100, 200)
-        edge_pixels = np.count_nonzero(edges)
-        ink_pixels = np.count_nonzero(self.thresh_detail)
-        return round(edge_pixels / ink_pixels, 4) if ink_pixels > 0 else 0
-
-    # --- PROFESSIONAL INTERPRETATION LOGIC (From DOCX) ---
-    def generate_professional_report(self):
-        # 1. Gather Raw Metrics
-        loop_count = self.get_loops()
-        mean_spacing, std_dev_spacing = self.get_word_spacing_stats()
+        if not spacings: return 0.5
         
-        raw = {
-            "Loops": loop_count,
-            "Embellishments": self.get_embellishments(),
-            "Diacritics": self.get_diacritics(),
-            "Retouching": self.get_retouching(),
-            "Word_Spacing_px": mean_spacing,
-            "Spacing_Consistency": std_dev_spacing,
-            "T_Crossing": self.get_t_crossings(),
-            "Pen_Lifts": self.get_pen_lifts(),
-            "Tremors": self.get_tremors()
+        avg_spacing_px = np.median(spacings)
+        # Normalize relative to line height
+        # 0.2x LineHeight (Normal) to 1.0x LineHeight (Wide)
+        norm = avg_spacing_px / self.avg_line_height
+        return self._clamp(norm)
+
+    # --- FEATURE 4: EMBELLISHMENTS (Skeleton Branching) ---
+    def get_embellishment_score(self):
+        """Detects complexity by checking branch points in the skeleton."""
+        # Convolution to find pixels with >2 neighbors (intersections/crossings)
+        kernel = np.array([[1, 1, 1],
+                           [1, 10, 1],
+                           [1, 1, 1]])
+        filtered = cv2.filter2D(self.skeleton, -1, kernel)
+        
+        # Pixels with value > 12 are branch points (center=10 + >2 neighbors)
+        branches = np.sum(filtered > 12)
+        total_ink = np.sum(self.skeleton > 0)
+        
+        if total_ink == 0: return 0.0
+        
+        # Ratio of branch points to total stroke length
+        complexity = branches / total_ink
+        # Normalize: 0.02 (Simple) to 0.10 (Highly Decorative)
+        return self._clamp((complexity - 0.02) * 15.0)
+
+    # --- FEATURE 5: RETOUCHING (Blob Density) ---
+    def get_retouching_score(self):
+        """Detects high-density ink blobs (overwriting)."""
+        # Distance Transform: Finds thickest parts of the ink
+        dist = cv2.distanceTransform(self.binary, cv2.DIST_L2, 5)
+        # Thickness > 20% of line height usually means blob/overwrite
+        threshold = self.avg_line_height * 0.20
+        
+        blobs = np.sum(dist > threshold)
+        total_ink = np.sum(self.binary > 0)
+        
+        if total_ink == 0: return 0.0
+        
+        ratio = blobs / total_ink
+        return self._clamp(ratio * 5.0) # Scaling factor
+
+    # --- METRIC WRAPPERS (Counts & Stats) ---
+    def get_counts_and_stats(self):
+        # Loops
+        contours, hierarchy = cv2.findContours(self.binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        loop_areas = []
+        if hierarchy is not None:
+            for i, h in enumerate(hierarchy[0]):
+                if h[3] != -1: # Inner contour
+                    area = cv2.contourArea(contours[i])
+                    if 10 < area < (self.avg_line_height**2):
+                        loop_areas.append(area)
+        
+        loop_count = len(loop_areas)
+        loop_mean = self._clamp(np.mean(loop_areas) / (self.avg_line_height**2) * 3) if loop_areas else 0
+        loop_var = self._clamp(np.std(loop_areas) / (self.avg_line_height**2) * 5) if loop_areas else 0
+
+        # T-Bars (Horizontal Line Detection)
+        cols = self.binary.shape[1]
+        horizontal_size = int(cols / 30)
+        h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (horizontal_size, 1))
+        h_mask = cv2.morphologyEx(self.binary, cv2.MORPH_OPEN, h_kernel)
+        t_contours, _ = cv2.findContours(h_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        t_count = len(t_contours)
+
+        # Diacritics (Small Dots)
+        d_contours, _ = cv2.findContours(self.binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        dot_count = 0
+        dot_heights = []
+        for c in d_contours:
+            area = cv2.contourArea(c)
+            x,y,w,h = cv2.boundingRect(c)
+            # Small compact shape high up
+            if 5 < area < 100 and w < 20 and h < 20:
+                dot_count += 1
+                dot_heights.append(y)
+        
+        dia_offset_mean = 0.5 # Default middle
+        if dot_heights:
+             # Normalize Y position relative to image height (Rough approx)
+             dia_offset_mean = self._clamp(1.0 - (np.mean(dot_heights) / self.binary.shape[0]))
+
+        return {
+            "Loop_Count": loop_count, "Loop_Mean": loop_mean, "Loop_Var": loop_var,
+            "T_Count": t_count, "T_Mean": 0.5, "T_Var": 0.1, # Placeholders for T stats
+            "Dia_Count": dot_count, "Dia_Mean": dia_offset_mean, "Dia_Var": 0.1
         }
 
-        # 2. Map to Document Categories
-        categories = {}
+    def generate_report(self):
+        counts = self.get_counts_and_stats()
+        
+        return {
+            # --- NORMALIZED INDICES (0.0 - 1.0) ---
+            "Word_Spacing_Score": self.get_word_spacing_score(),
+            "Pen_Lifts_Score": self.get_pen_lifts_score(),
+            "Tremor_Index": self.get_tremors(),
+            "Embellishment_Index": self.get_embellishment_score(),
+            "Retouching_Index": self.get_retouching_score(),
+            
+            # --- COUNTS ---
+            "Loops_Count": counts["Loop_Count"],
+            "Diacritics_Count": counts["Dia_Count"],
+            "T_Crossing_Count": counts["T_Count"],
+            
+            # --- ADVANCED VECTORS (For Prediction) ---
+            "Loop_Area_Mean": counts["Loop_Mean"],
+            "Loop_Area_Var": counts["Loop_Var"],
+            "Diacritic_Offset_Mean": counts["Dia_Mean"],
+            "Diacritic_Offset_Var": counts["Dia_Var"],
+            "T_Bar_Height_Mean": counts["T_Mean"],
+            "T_Bar_Height_Var": counts["T_Var"],
+            "Word_Spacing_Norm": self.get_word_spacing_score()
+        }
 
-        # -- LOOPS (Narrow, Wide, Angular, No loops) --
-        if raw["Loops"] < 10:
-            categories["Loop_Style"] = "No loops / Retracted"
-        else:
-            avg_circ = np.mean(self.loop_circularities) if self.loop_circularities else 0
-            if avg_circ > 0.8: categories["Loop_Style"] = "Wide Loops (Round)"
-            elif avg_circ > 0.6: categories["Loop_Style"] = "Narrow Loops"
-            else: categories["Loop_Style"] = "Angular / Compressed Loops"
-
-        # -- WORD SPACING (Narrow, Normal, Wide, Inconsistent) --
-        # Using Std Dev to detect inconsistency
-        if raw["Spacing_Consistency"] > 25: 
-            categories["Spacing_Type"] = "Inconsistent"
-        elif raw["Word_Spacing_px"] < 40: 
-            categories["Spacing_Type"] = "Narrow"
-        elif raw["Word_Spacing_px"] > 65: 
-            categories["Spacing_Type"] = "Wide"
-        else: 
-            categories["Spacing_Type"] = "Normal"
-
-        # -- TREMORS (Abundant, Less Prevalent) --
-        if raw["Tremors"] > 0.18:
-            categories["Tremors_Category"] = "Abundant (Shaky)"
-        else:
-            categories["Tremors_Category"] = "Less Prevalent (Stable)"
-
-        # -- EMBELLISHMENTS (Abundant, Less Prevalent) --
-        if raw["Embellishments"] > 0.70:
-            categories["Embellishments_Category"] = "Abundant (Decorated)"
-        else:
-            categories["Embellishments_Category"] = "Less Prevalent (Simple)"
-
-        # -- PEN LIFTS (Abundant, Less Prevalent) --
-        # High count = Print (Abundant lifts). Low count = Cursive (Less lifts).
-        if raw["Pen_Lifts"] > 300: 
-            categories["Pen_Lifts_Category"] = "Abundant (Disconnected)"
-        else:
-            categories["Pen_Lifts_Category"] = "Less Prevalent (Fluid)"
-
-        # -- RETOUCHING (Abundant, Less Prevalent) --
-        if raw["Retouching"] > 0.75:
-            categories["Retouching_Category"] = "Abundant (Overwritten)"
-        else:
-            categories["Retouching_Category"] = "Less Prevalent (Clean)"
-
-        # -- T-CROSSINGS (High/Middle/Low - Proxy via Count) --
-        # Note: Computer vision cannot easily detect "Height on stem" without OCR.
-        # We classify by FREQUENCY as a proxy for "Attention to detail".
-        if raw["T_Crossing"] > 20:
-            categories["T_Crossing_Frequency"] = "Frequent (High Attention)"
-        else:
-            categories["T_Crossing_Frequency"] = "Sparse (Low Attention)"
-
-        # -- DIACRITICS (Proper/Displaced - Proxy via Count) --
-        if raw["Diacritics"] > 20:
-            categories["Diacritics_Category"] = "Abundant (Precise)"
-        else:
-            categories["Diacritics_Category"] = "Less Prevalent (Omitted)"
-
-        return {**raw, **categories}
-
-# --- 4. API ENDPOINTS ---
-# --- 4. API ENDPOINTS ---
+# --- 4. API ENDPOINT ---
 @app.post("/analyze_image")
 async def analyze_image(file: UploadFile = File(...)):
-    logging.info(f"[>>] Received Request: {file.filename}")
+    print("\n" + "="*60)
+    logging.info(f"NEW REQUEST: {file.filename}")
     
     temp_filename = f"temp_{file.filename}"
     with open(temp_filename, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     
     try:
-        logging.info("[..] Starting professional analysis...")
-        
         extractor = HandwritingFeatures(temp_filename)
-        results = extractor.generate_professional_report()
+        results = extractor.generate_report()
         
-        logging.info(f"[OK] Analysis Complete.")
+        logging.info("Features Extracted Successfully.")
         
-        # --- MODIFIED CSV SAVING LOGIC ---
-        # We explicitly list only the columns we want (A to I).
-        # This excludes Column J (Tremors) and all Categories (K onwards).
-        csv_columns = [
-            "Filename", 
-            "Loops", 
-            "Embellishments", 
-            "Diacritics", 
-            "Retouching", 
-            "Word_Spacing_px", 
-            "Spacing_Consistency", 
-            "T_Crossing", 
-            "Pen_Lifts"
-        ]
-        
-        csv_file = "analysis_results.csv"
-        try:
-            file_exists = os.path.isfile(csv_file)
-            with open(csv_file, 'a', newline='') as f:
-                writer = csv.writer(f)
-                
-                # Write Header if file is new
-                if not file_exists:
-                    writer.writerow(csv_columns)
-                
-                # Build the row data strictly based on our allowed columns
-                # 1. Filename
-                row_data = [file.filename]
-                # 2. The rest of the metrics from the 'results' dictionary
-                for col in csv_columns[1:]:
-                    row_data.append(results.get(col, 0))
-                
-                writer.writerow(row_data)
-                
-            logging.info(f"[SAVE] Saved to {csv_file}")
-        except PermissionError:
-            logging.warning(f"[WARN] CSV File Locked.")
+        # Save CSV
+        csv_file = "analysis_results_full.csv"
+        file_exists = os.path.isfile(csv_file)
+        with open(csv_file, 'a', newline='') as f:
+            writer = csv.writer(f)
+            if not file_exists: writer.writerow(['Filename'] + list(results.keys()))
+            writer.writerow([file.filename] + list(results.values()))
             
         return {"filename": file.filename, "data": results}
 
     except Exception as e:
-        logging.error(f"[!!] CRITICAL ERROR: {str(e)}")
+        logging.error(f"ERROR: {str(e)}")
         return {"error": str(e)}
     finally:
         if os.path.exists(temp_filename): os.remove(temp_filename)
-        logging.info("[XX] Cleanup done.")
+        print("="*60 + "\n")
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000, log_level="info")

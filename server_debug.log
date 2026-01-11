@@ -1,0 +1,89 @@
+10:08:37 | INFO     | NEW REQUEST RECEIVED: 103.png
+10:08:37 | INFO     | --- [START] Processing Image: temp_103.png ---
+10:08:38 | INFO     |    > Original Dim: 4960x7015 | Resized to: 1000x1414
+10:08:38 | INFO     |    > Applying Filters (Gaussian Blur & Adaptive Threshold)...
+10:08:39 | INFO     |    > Contours Found: 786
+10:08:39 | INFO     |    > Analyzing Document Structure (Line Detection)...
+10:08:39 | INFO     |      -> Detected 57 Text Lines.
+10:08:39 | INFO     |      -> Average Line Height: 46.96 px
+10:08:39 | INFO     |    > Calculating Loop Metrics...
+10:08:39 | INFO     |      -> Valid Loops Found: 113
+10:08:39 | INFO     |      -> Raw Mean Area: 69.38 | Raw Variance: 3366.99
+10:08:39 | INFO     |    > Calculating Diacritic Metrics (i-dots)...
+10:08:39 | INFO     |      -> Potential Dots: 415 | Potential Bodies: 30
+10:08:39 | INFO     |      -> Matched Dots: 90
+10:08:39 | INFO     |      -> Raw Mean Dist: 48.28px | Raw StdDev: 23.89
+10:08:39 | INFO     |    > Calculating T-Bar Metrics...
+10:08:39 | INFO     |      -> Horizontal Lines: 473 | Matched T-Bars: 465
+10:08:39 | INFO     |      -> Raw Mean Height (0-1): -0.04
+10:08:39 | INFO     |    > Calculating Word Spacing...
+10:08:39 | INFO     |      -> Word Gaps Found: 9
+10:08:39 | INFO     |      -> Raw Mean Spacing: 39.44 px
+10:08:39 | INFO     | --- [DONE] Feature Extraction Finished ---
+10:08:39 | INFO     | RESULT: {'Loop_Area_Mean': np.float64(0.0839), 'Loop_Area_Var': np.float64(0.1052), 'Diacritic_Offset_Mean': np.float64(0.6853), 'Diacritic_Offset_Var': 1.0, 'T_Bar_Height_Mean': 0.0, 'T_Bar_Height_Var': 1.0, 'Word_Spacing_Norm': np.float64(0.8399)}
+10:08:39 | INFO     | Data saved to analysis_results_normalized.csv
+10:44:17 | INFO     | NEW REQUEST RECEIVED: 104.png
+10:44:17 | INFO     | --- [START] Processing Image: temp_104.png ---
+10:44:18 | INFO     |    > Original Dim: 4960x7015 | Resized to: 1000x1414
+10:44:18 | INFO     |    > Applying Filters (Gaussian Blur & Adaptive Threshold)...
+10:44:18 | INFO     |    > Contours Found (Detail Layer): 908
+10:44:18 | INFO     |    > Analyzing Document Structure (Line Detection)...
+10:44:19 | INFO     |      -> Detected 76 Text Lines.
+10:44:19 | INFO     |      -> Average Line Height: 42.74 px
+10:44:19 | INFO     |    > Calculating Loop Metrics...
+10:44:19 | INFO     |      -> Valid Loops Found: 246
+10:44:19 | INFO     |      -> Raw Mean Area: 61.82 px^2 | Raw Variance: 2022.85
+10:44:19 | INFO     |    > Calculating Diacritic Metrics (i-dots)...
+10:44:19 | INFO     |      -> Potential Dots: 595 | Potential Letter Bodies: 30
+10:44:19 | INFO     |      -> Matched Dots to Bodies: 106
+10:44:19 | INFO     |      -> Raw Mean Displacement: 44.68px | Raw StdDev: 10.16
+10:44:19 | INFO     |    > Calculating T-Bar Metrics...
+10:44:19 | INFO     |      -> Horizontal Strokes: 503 | Matched T-Bars: 497
+10:44:19 | INFO     |      -> Raw Mean Height (Relative 0-1): -0.18
+10:44:19 | INFO     |    > Calculating Normalized Word Spacing...
+10:44:19 | INFO     |      -> Word Gaps Found: 66
+10:44:19 | INFO     |      -> Raw Mean Spacing: 23.77 px
+10:44:19 | INFO     | --- [DONE] Feature Extraction Finished ---
+10:44:19 | INFO     | FINAL RESULTS: {'Loop_Area_Mean': np.float64(0.0903), 'Loop_Area_Var': np.float64(0.0985), 'Diacritic_Offset_Mean': np.float64(0.697), 'Diacritic_Offset_Var': np.float64(0.4754), 'T_Bar_Height_Mean': 0.0, 'T_Bar_Height_Var': 1.0, 'Word_Spacing_Norm': np.float64(0.5563)}
+10:44:19 | INFO     | Data successfully appended to analysis_results_normalized.csv
+10:49:28 | INFO     | NEW REQUEST RECEIVED: 104.png
+10:49:28 | INFO     | --- [START] Processing Image: temp_104.png ---
+10:49:30 | INFO     |    > Resized to: 1000x1414
+10:49:30 | INFO     |      -> Avg Line Height: 42.74 px
+10:49:31 | INFO     | Analysis Complete. Saving results...
+10:49:31 | INFO     | KEYS: ['Loops_Count', 'Embellishments', 'Diacritics_Count', 'Retouching', 'Word_Spacing_Px', 'T_Crossing_Count', 'Pen_Lifts', 'Tremors', 'Loop_Area_Mean', 'Loop_Area_Var', 'Diacritic_Offset_Mean', 'Diacritic_Offset_Var', 'T_Bar_Height_Mean', 'T_Bar_Height_Var', 'Word_Spacing_Norm']
+10:49:31 | INFO     | Data saved to analysis_results_full.csv
+10:53:12 | INFO     | NEW REQUEST RECEIVED: 104.png
+10:53:12 | INFO     | --- [START] Processing Image: temp_104.png ---
+10:53:13 | INFO     |    > Resized to: 1000x1414
+10:53:13 | INFO     |      -> Avg Line Height: 42.74 px
+10:53:13 | INFO     | Analysis Complete. Saving results...
+10:53:13 | INFO     | KEYS: ['Loops_Count', 'Embellishments', 'Diacritics_Count', 'Retouching', 'Word_Spacing_Px', 'T_Crossing_Count', 'Pen_Lifts', 'Tremors', 'Loop_Area_Mean', 'Loop_Area_Var', 'Diacritic_Offset_Mean', 'Diacritic_Offset_Var', 'T_Bar_Height_Mean', 'T_Bar_Height_Var', 'Word_Spacing_Norm']
+10:53:13 | INFO     | Data saved to analysis_results_full.csv
+11:54:28 | INFO     | NEW REQUEST RECEIVED: 101.png
+11:54:28 | INFO     | --- [START] Processing Image: temp_101.png ---
+11:54:30 | INFO     |    > Resized to: 1000x1414
+11:54:30 | INFO     |      -> Avg Line Height: 34.77 px
+11:54:31 | INFO     | Analysis Complete. Saving results...
+11:54:31 | INFO     | KEYS: ['Loops_Count', 'Embellishments', 'Diacritics_Count', 'Retouching', 'Word_Spacing_Px', 'T_Crossing_Count', 'Pen_Lifts', 'Tremors', 'Loop_Area_Mean', 'Loop_Area_Var', 'Diacritic_Offset_Mean', 'Diacritic_Offset_Var', 'T_Bar_Height_Mean', 'T_Bar_Height_Var', 'Word_Spacing_Norm']
+11:54:31 | INFO     | Data saved to analysis_results_full.csv
+11:58:26 | INFO     | NEW REQUEST RECEIVED: 100.png
+11:58:26 | INFO     | --- [START] Processing Image: temp_100.png ---
+11:58:26 | INFO     |    > Resized to: 1000x1414
+11:58:26 | INFO     |      -> Avg Line Height: 29.43 px
+11:58:26 | INFO     | Analysis Complete.
+11:58:26 | INFO     | Data saved to analysis_results_full.csv
+12:02:05 | INFO     | NEW REQUEST: 104.png
+12:02:05 | INFO     | --- [START] Processing: temp_104.png ---
+12:02:06 | INFO     |    > Avg Line Height (Px): 889.0
+12:02:06 | INFO     |    > Strokes: 869 | Words: 70 | Ratio: 12.41
+12:02:06 | INFO     | Features Extracted Successfully.
+12:06:45 | INFO     | NEW REQUEST: 099.png
+12:06:45 | INFO     | --- [START] Processing: temp_099.png ---
+12:06:46 | INFO     |    > Avg Line Height (Px): 65.0
+12:06:46 | INFO     |    > Strokes: 275 | Words: 110 | Ratio: 2.50
+12:06:47 | INFO     | Features Extracted Successfully.
+12:11:24 | INFO     | NEW REQUEST: 100.png
+12:11:25 | INFO     | --- [START] Processing: temp_100.png ---
+12:11:25 | INFO     |    > Avg Line Height (Px): 851.0
+12:11:25 | INFO     | Features Extracted Successfully.

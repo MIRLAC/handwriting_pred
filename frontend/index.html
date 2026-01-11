@@ -14,10 +14,11 @@
     <style>
         :root {
             --bg-light: #f4f1ea;
-            --card-light: rgba(255, 255, 255, 0.85);
+            --card-light: rgba(255, 255, 255, 0.95);
             --text-dark: #2d3748;
             --text-soft: #718096;
             --accent-sage: #6B9080;
+            --accent-dark: #4A675B;
         }
         
         body {
@@ -25,11 +26,11 @@
             background-color: var(--bg-light);
             background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZHRoPSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMCAuNWg5Nm0tMTYgMWgxNm0tMzIgMmgyNHYxSDB6bTE2IDRoMzJ2MUgxNnptOCAzaDE2djFIMjR6bS04IDNoNDB2MUgxNnptMTYgM2g0OHYxSDMyem0tMzIgNGg2NHYxSDB6bTE2IDNoMzJ2MUgxNnptOCA0aDE2djFIMjR6bTE2IDRoMzJ2MUg0MHptLTMyIDVoOTZ2MUg4eiIgb3BhY2l0eT0iLjA1IiAvPjwvc3ZnPg==');
         }
-        h1, h2 { font-family: 'Playfair Display', serif; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
         .mono-font { font-family: 'JetBrains Mono', monospace; }
         
         #fileInput { display: none; }
-        .fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
+        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
         .pen-loader { width: 100px; height: 40px; position: relative; margin: 20px auto; }
@@ -38,31 +39,33 @@
         @keyframes draw { to { stroke-dashoffset: 0; } }
 
         .metric-card {
-            transition: transform 0.2s ease;
+            transition: all 0.3s ease;
+            border-bottom: 4px solid transparent;
         }
         .metric-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--accent-sage);
+            transform: translateY(-5px);
+            border-bottom-color: var(--accent-sage);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
         }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
-    <main class="w-full max-w-5xl mx-auto backdrop-blur-md rounded-3xl shadow-2xl p-8 md:p-12 transition-all duration-300 border border-white/40" style="background-color: var(--card-light);">
+    <main class="w-full max-w-6xl mx-auto backdrop-blur-md rounded-3xl shadow-2xl p-8 md:p-12 transition-all duration-300 border border-white/40" style="background-color: var(--card-light);">
         <header class="text-center mb-10">
             <h1 class="text-5xl font-bold mb-3" style="color: var(--text-dark);">GraphoGlyph AI</h1>
             <p class="text-lg font-medium tracking-wide uppercase" style="color: var(--accent-sage);">Quantitative Feature Extraction Module</p>
         </header>
 
-        <section id="uploadSection" class="border-3 border-dashed rounded-2xl p-12 text-center transition-all duration-300 bg-white/50 hover:bg-white/80" style="border-color: #cbd5e0;">
-            <div class="mx-auto h-20 w-20 mb-6 p-4 rounded-full bg-gray-100/80" style="color: var(--accent-sage);">
+        <section id="uploadSection" class="border-3 border-dashed rounded-2xl p-12 text-center transition-all duration-300 bg-white/50 hover:bg-white/80 group" style="border-color: #cbd5e0;">
+            <div class="mx-auto h-24 w-24 mb-6 p-5 rounded-full bg-gray-50 group-hover:bg-green-50 transition-colors" style="color: var(--accent-sage);">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </div>
             <h3 class="text-2xl font-semibold mb-2" style="color: var(--text-dark);">Upload Handwriting Sample</h3>
             <p class="mb-8 text-gray-500">Drag & drop or select an image (JPG, PNG) for geometric analysis.</p>
             
             <div class="flex justify-center">
-                <label for="fileInput" class="cursor-pointer px-10 py-4 text-lg font-semibold rounded-xl text-white shadow-lg transition-all hover:shadow-xl hover:scale-105" style="background-color: var(--accent-sage);">
+                <label for="fileInput" class="cursor-pointer px-10 py-4 text-lg font-semibold rounded-xl text-white shadow-lg transition-all hover:shadow-xl hover:scale-105 hover:bg-[#5a7d6e]" style="background-color: var(--accent-sage);">
                     Select Image File
                 </label>
             </div>
@@ -70,12 +73,12 @@
         </section>
         
         <section id="previewSection" class="hidden text-center fade-in">
-            <div class="bg-white/60 p-4 rounded-2xl shadow-inner mb-8 inline-block">
-                <img id="imagePreview" src="" alt="Preview" class="max-h-80 rounded-xl object-contain mx-auto">
+            <div class="bg-white p-2 rounded-2xl shadow-sm mb-8 inline-block border border-gray-200">
+                <img id="imagePreview" src="" alt="Preview" class="max-h-64 rounded-xl object-contain mx-auto">
             </div>
             <div class="flex gap-4 justify-center">
-                <button id="analyzeBtn" class="px-8 py-4 text-lg font-semibold rounded-xl text-white shadow-lg transition-all hover:shadow-xl hover:scale-105" style="background-color: var(--accent-sage);">
-                    Run Quantitative Analysis
+                <button id="analyzeBtn" class="px-8 py-4 text-lg font-semibold rounded-xl text-white shadow-lg transition-all hover:shadow-xl hover:scale-105 hover:bg-[#5a7d6e]" style="background-color: var(--accent-sage);">
+                    Run Analysis
                 </button>
                 <button id="changeBtn" class="px-6 py-4 text-lg font-semibold rounded-xl bg-white border-2 transition-all hover:bg-gray-50" style="color: var(--text-soft); border-color: #e2e8f0;">
                     Cancel
@@ -86,20 +89,50 @@
         <section id="status" class="mt-8 text-center min-h-[60px]">
             <div id="loader" class="pen-loader hidden">
                 <svg><path class="pen-path" d="M10,20 C40,0 60,0 90,20" stroke="var(--accent-sage)" stroke-width="4" fill="none" stroke-linecap="round"></path></svg>
-                <p class="text-sm mt-2 font-medium" style="color: var(--accent-sage);">Processing Dual-Pipeline Geometry...</p>
+                <p class="text-sm mt-2 font-medium" style="color: var(--accent-sage);">Processing Geometry & Calculating Variance...</p>
             </div>
-            <p id="errorMessage" class="font-medium text-red-600 bg-red-50 py-2 px-4 rounded-lg inline-block hidden"></p>
+            <p id="errorMessage" class="font-medium text-red-600 bg-red-50 py-3 px-6 rounded-lg inline-block hidden border border-red-100"></p>
         </section>
 
-        <section id="resultsContainer" class="hidden mt-10 fade-in">
-             <h2 class="text-3xl font-bold text-center mb-8" style="color: var(--text-dark);">Extracted Feature Data</h2>
+        <section id="resultsContainer" class="hidden mt-12 fade-in">
              
-             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10" id="metricsGrid">
+             <div class="flex items-center justify-between mb-8">
+                <h2 class="text-3xl font-bold" style="color: var(--text-dark);">Basic Graphological Metrics</h2>
+                <span class="bg-gray-100 text-gray-500 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wide">Raw Data</span>
+             </div>
+             
+             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12" id="metricsGrid">
                 </div>
 
-             <div class="text-center">
-                <p class="text-sm text-gray-500 mb-4">Data has been logged to CSV for methodology defense.</p>
-                <button id="resetBtn" class="px-8 py-3 font-semibold rounded-xl bg-white border-2 transition-all hover:bg-gray-50 hover:border-gray-400" style="color: var(--text-dark); border-color: #e2e8f0;">
+             <div class="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h2 class="text-2xl font-bold mb-1" style="color: var(--text-dark);">Normalized ML Features</h2>
+                        <p class="text-sm text-gray-500">Scaled numeric vectors (0.0 - 1.0) relative to line height.</p>
+                    </div>
+                    <div class="h-10 w-10 bg-gray-50 rounded-full flex items-center justify-center text-gray-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="border-b border-gray-100 text-xs font-semibold tracking-wide text-gray-400 uppercase">
+                                <th class="pb-3 pl-4">Feature Key</th>
+                                <th class="pb-3">Normalized Score</th>
+                                <th class="pb-3">Interpretation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="advancedTableBody" class="text-sm">
+                            </tbody>
+                    </table>
+                </div>
+             </div>
+
+             <div class="text-center mt-12">
+                <p class="text-sm text-gray-400 mb-4">Results appended to analysis_results_full.csv</p>
+                <button id="resetBtn" class="px-8 py-3 font-semibold rounded-xl bg-white border-2 transition-all hover:bg-gray-50 hover:border-gray-400 text-gray-600">
                     Analyze Another Sample
                 </button>
              </div>
@@ -119,24 +152,23 @@
             analyzeBtn: document.getElementById('analyzeBtn'),
             changeBtn: document.getElementById('changeBtn'),
             resetBtn: document.getElementById('resetBtn'),
-            metricsGrid: document.getElementById('metricsGrid')
+            metricsGrid: document.getElementById('metricsGrid'),
+            advancedTableBody: document.getElementById('advancedTableBody')
         };
 
         let currentFile = null;
         const API_URL = 'http://127.0.0.1:8000/analyze_image';
 
-        // Event Listeners
+        // --- Event Listeners ---
         elements.fileInput.addEventListener('change', (e) => prepareFile(e.target.files[0]));
         elements.analyzeBtn.addEventListener('click', () => analyzeFile(currentFile));
         elements.changeBtn.addEventListener('click', resetUI);
         elements.resetBtn.addEventListener('click', resetUI);
 
-        // Drag & Drop
+        // Drag & Drop Logic
         ['dragover', 'dragleave', 'drop'].forEach(eventName => {
-            elements.uploadSection.addEventListener(eventName, preventDefaults, false);
+            elements.uploadSection.addEventListener(eventName, (e) => { e.preventDefault(); e.stopPropagation(); }, false);
         });
-        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
-        
         elements.uploadSection.addEventListener('drop', (e) => prepareFile(e.dataTransfer.files[0]));
 
         function prepareFile(file) {
@@ -172,32 +204,19 @@
 
             try {
                 const response = await fetch(API_URL, { method: 'POST', body: formData });
-                
-                // 1. Check HTTP Status (Did the server crash?)
-                if (!response.ok) {
-                    throw new Error(`Server connection failed: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Server connection failed: ${response.status}`);
 
                 const jsonResponse = await response.json();
+                if (jsonResponse.error) throw new Error(`Backend Error: ${jsonResponse.error}`);
+                if (!jsonResponse.data) throw new Error("Server returned no data.");
 
-                // 2. Check Logic Error (Did Python catch an exception?)
-                if (jsonResponse.error) {
-                    throw new Error(`Backend Error: ${jsonResponse.error}`);
-                }
-
-                // 3. Verify Data Exists
-                if (!jsonResponse.data) {
-                    throw new Error("Server returned no data.");
-                }
-
-                // If we get here, data is safe to use
                 displayResults(jsonResponse.data);
+                
                 elements.previewSection.classList.add('hidden');
                 elements.resultsContainer.classList.remove('hidden');
 
             } catch (error) {
                 console.error(error);
-                // Now you will see the REAL error message on screen
                 showError(error.message); 
             } finally {
                 elements.loader.classList.add('hidden');
@@ -206,35 +225,97 @@
         }
         
         function displayResults(data) {
+            // 1. POPULATE BASIC METRICS GRID
             elements.metricsGrid.innerHTML = '';
             
-            // Define display properties for the 8 parameters
+            // Logic to determine status badge
+            const getStatus = (val, threshold, labelHigh, labelLow) => {
+                return val > threshold ? labelHigh : labelLow;
+            };
+
             const metricDefs = [
-                { key: 'Word_Spacing_px', label: 'Word Spacing', unit: 'px', desc: 'Avg distance between words', icon: '↔️' },
-                { key: 'T_Crossing', label: 'T-Crossings', unit: 'count', desc: 'Detected horizontal strokes', icon: 't' },
-                { key: 'Loops', label: 'Loop Count', unit: 'count', desc: 'Closed inner shapes (e, o, a)', icon: '⭕' },
-                { key: 'Diacritics', label: 'Diacritics', unit: 'count', desc: 'Small detached dots (i, j)', icon: '•' },
-                { key: 'Pen_Lifts', label: 'Pen Lifts', unit: 'count', desc: 'Total distinct strokes', icon: '✒️' },
-                { key: 'Tremors', label: 'Tremor Index', unit: '0.0 - 1.0', desc: 'Line shakiness/jaggedness', icon: '〰️' },
-                { key: 'Embellishments', label: 'Embellishment Idx', unit: '0.0 - 1.0', desc: 'Geometric complexity', icon: '➰' },
-                { key: 'Retouching', label: 'Retouching Idx', unit: '0.0 - 1.0', desc: 'Overwritten areas', icon: '✏️' }
+                { 
+                    key: 'Word_Spacing_Px', label: 'Word Spacing', unit: 'px', icon: '↔️',
+                    status: getStatus(data.Word_Spacing_Px, 60, "Wide", "Normal") 
+                },
+                { 
+                    key: 'T_Crossing_Count', label: 'T-Crossings', unit: 'count', icon: 't',
+                    status: "Detected" 
+                },
+                { 
+                    key: 'Loops_Count', label: 'Loop Count', unit: 'count', icon: '⭕',
+                    status: getStatus(data.Loops_Count, 10, "Looped", "Retracted")
+                },
+                { 
+                    key: 'Diacritics_Count', label: 'Diacritics', unit: 'count', icon: '•',
+                    status: "i-dots / j-dots"
+                },
+                { 
+                    key: 'Pen_Lifts', label: 'Pen Lifts', unit: 'ratio', icon: '✒️',
+                    status: getStatus(data.Pen_Lifts, 2.0, "Disconnected", "Fluid")
+                },
+                { 
+                    key: 'Tremors', label: 'Tremor Index', unit: '0.0-1.0', icon: '〰️',
+                    status: getStatus(data.Tremors, 0.18, "Shaky", "Stable")
+                },
+                { 
+                    key: 'Embellishments', label: 'Embellish Idx', unit: '0.0-1.0', icon: '➰',
+                    status: getStatus(data.Embellishments, 0.7, "Decorated", "Simple")
+                },
+                { 
+                    key: 'Retouching', label: 'Retouching', unit: '0.0-1.0', icon: '✏️',
+                    status: getStatus(data.Retouching, 0.75, "Overwritten", "Clean")
+                }
             ];
 
             metricDefs.forEach(def => {
-                const val = data[def.key] !== undefined ? data[def.key] : 'N/A';
+                const val = data[def.key] !== undefined ? data[def.key] : 0;
+                
+                // Badge Color Logic
+                let badgeColor = "bg-gray-100 text-gray-500";
+                if (def.status === "Shaky" || def.status === "Overwritten") badgeColor = "bg-red-100 text-red-600";
+                else if (def.status === "Fluid" || def.status === "Stable" || def.status === "Clean") badgeColor = "bg-green-100 text-green-700";
+                else if (def.status === "Wide" || def.status === "Looped") badgeColor = "bg-blue-100 text-blue-600";
+
                 const card = document.createElement('div');
-                // Styling for the data card
-                card.className = 'metric-card bg-white p-6 rounded-2xl border-2 border-gray-100 shadow-sm flex flex-col items-center text-center';
+                card.className = 'metric-card bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center text-center';
                 card.innerHTML = `
-                    <div class="text-3xl mb-2">${def.icon}</div>
-                    <h4 class="font-bold text-gray-700 mb-1">${def.label}</h4>
+                    <div class="text-3xl mb-3 opacity-80">${def.icon}</div>
+                    <h4 class="font-bold text-gray-700 text-sm uppercase tracking-wide mb-1">${def.label}</h4>
                     <div class="font-bold text-3xl mono-font my-2" style="color: var(--text-dark);">
                         ${val} 
                     </div>
-                    <span class="text-xs font-semibold px-2 py-1 bg-gray-100 rounded-full text-gray-500 uppercase tracking-wider">${def.unit}</span>
-                    <p class="text-xs text-gray-400 mt-3">${def.desc}</p>
+                    <span class="text-xs font-bold px-2 py-1 rounded-full mb-3 ${badgeColor}">
+                        ${def.status}
+                    </span>
+                    <span class="text-xs font-medium text-gray-300 uppercase tracking-wider">${def.unit}</span>
                 `;
                 elements.metricsGrid.appendChild(card);
+            });
+
+            // 2. POPULATE ADVANCED FEATURES TABLE
+            elements.advancedTableBody.innerHTML = '';
+            
+            const advancedMetrics = [
+                { key: "Loop_Area_Mean", desc: "Average Loop Size (1.0 = Very Large)" },
+                { key: "Loop_Area_Var", desc: "Consistency of Loop Sizes" },
+                { key: "Diacritic_Offset_Mean", desc: "Dot Height (0=Low, 1=High)" },
+                { key: "Diacritic_Offset_Var", desc: "Consistency of Dot Placement" },
+                { key: "T_Bar_Height_Mean", desc: "Cross Height (0=Bottom, 1=Top)" },
+                { key: "T_Bar_Height_Var", desc: "Consistency of T-Bar Height" },
+                { key: "Word_Spacing_Norm", desc: "Spacing relative to line height" }
+            ];
+
+            advancedMetrics.forEach(m => {
+                const val = data[m.key] !== undefined ? data[m.key] : 0.0;
+                const row = document.createElement('tr');
+                row.className = "hover:bg-gray-50 transition-colors border-b border-gray-50 last:border-0";
+                row.innerHTML = `
+                    <td class="py-4 pl-4 font-medium text-gray-700 mono-font text-xs">${m.key}</td>
+                    <td class="py-4 font-bold text-green-600 mono-font">${val}</td>
+                    <td class="py-4 text-gray-500 text-sm">${m.desc}</td>
+                `;
+                elements.advancedTableBody.appendChild(row);
             });
         }
 
