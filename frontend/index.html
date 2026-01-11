@@ -3,24 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GraphoGlyph AI - Handwriting Analyzer</title>
+    <title>GraphoGlyph AI - Quantitative Analyzer</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --bg-light: #f4f1ea;
-            --card-light: rgba(255, 255, 255, 0.75);
-            --text-dark: #4a4a4a;
-            --text-soft: #888888;
-            --accent-sage: #8FBC8F;
-            --accent-clay: #CDA26F;
+            --card-light: rgba(255, 255, 255, 0.85);
+            --text-dark: #2d3748;
+            --text-soft: #718096;
+            --accent-sage: #6B9080;
         }
         
         body {
@@ -28,422 +25,226 @@
             background-color: var(--bg-light);
             background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZHRoPSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMCAuNWg5Nm0tMTYgMWgxNm0tMzIgMmgyNHYxSDB6bTE2IDRoMzJ2MUgxNnptOCAzaDE2djFIMjR6bS04IDNoNDB2MUgxNnptMTYgM2g0OHYxSDMyem0tMzIgNGg2NHYxSDB6bTE2IDNoMzJ2MUgxNnptOCA0aDE2djFIMjR6bTE2IDRoMzJ2MUg0MHptLTMyIDVoOTZ2MUg4eiIgb3BhY2l0eT0iLjA1IiAvPjwvc3ZnPg==');
         }
-        h1, h2, h3, h4 {
-            font-family: 'Playfair Display', serif;
-        }
+        h1, h2 { font-family: 'Playfair Display', serif; }
+        .mono-font { font-family: 'JetBrains Mono', monospace; }
         
-        #fileInput, #cameraInput {
-            display: none;
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        #fileInput { display: none; }
+        .fade-in { animation: fadeIn 0.5s ease-in-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         
-        .pen-loader {
-            width: 100px;
-            height: 40px;
-            position: relative;
-            margin: 20px auto;
-        }
-        .pen-loader svg {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-        .pen-loader .pen-path {
-            stroke-dasharray: 500;
-            stroke-dashoffset: 500;
-            animation: draw 2s linear infinite;
-        }
-        @keyframes draw {
-            to {
-                stroke-dashoffset: 0;
-            }
-        }
-        /* --- Style for the personality indicators list --- */
-        #personalityIndicators ul {
-            list-style: none; /* Remove default bullets */
-            padding-left: 0;
-            margin-top: 0.5rem; /* Add some space above the list */
-        }
-         #personalityIndicators li {
-             padding-left: 1.5em; /* Space for the custom bullet */
-             margin-bottom: 0.5em; /* Space between items */
-             color: var(--text-dark);
-             position: relative; /* Needed for absolute positioning of the pseudo-element */
-             line-height: 1.4; /* Improve readability */
-         }
-         /* Custom bullet point using pseudo-element */
-         #personalityIndicators li::before {
-            content: "▹"; /* Custom bullet shape */
-            color: var(--accent-sage); /* Bullet point color */
-            font-weight: bold;
-            display: inline-block; 
-            position: absolute; /* Position relative to the li */
-            left: 0.5em; /* Adjust position */
-            top: 0;
-         }
+        .pen-loader { width: 100px; height: 40px; position: relative; margin: 20px auto; }
+        .pen-loader svg { width: 100%; height: 100%; display: block; }
+        .pen-loader .pen-path { stroke-dasharray: 500; stroke-dashoffset: 500; animation: draw 2s linear infinite; }
+        @keyframes draw { to { stroke-dashoffset: 0; } }
 
+        .metric-card {
+            transition: transform 0.2s ease;
+        }
+        .metric-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent-sage);
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
 
-    <main class="w-full max-w-2xl mx-auto backdrop-blur-lg rounded-2xl shadow-xl p-6 md:p-10 transition-all duration-300" style="background-color: var(--card-light);">
-        <header class="text-center mb-8">
-            <h1 class="text-5xl font-bold" style="color: var(--text-dark);">GraphoGlyph AI</h1>
-            <p class="text-lg mt-2" style="color: var(--text-soft);">Unlock the secrets hidden in your handwriting.</p>
+    <main class="w-full max-w-5xl mx-auto backdrop-blur-md rounded-3xl shadow-2xl p-8 md:p-12 transition-all duration-300 border border-white/40" style="background-color: var(--card-light);">
+        <header class="text-center mb-10">
+            <h1 class="text-5xl font-bold mb-3" style="color: var(--text-dark);">GraphoGlyph AI</h1>
+            <p class="text-lg font-medium tracking-wide uppercase" style="color: var(--accent-sage);">Quantitative Feature Extraction Module</p>
         </header>
 
-        <section id="uploadSection" class="border-2 border-dashed rounded-xl p-8 text-center transition-all duration-300" style="border-color: #d1d5db;">
-            <div id="upload-icon" class="mx-auto h-16 w-16" style="color: var(--text-soft);">
-                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-pen-line"><path d="m18 5-3-3H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2Z"/><path d="M8 18h8"/><path d="m18.4 9.6-4.2 4.2a2 2 0 0 1-2.8 0L9 11.4a2 2 0 1 1 2.8-2.8l4.6 4.6"/><path d="M15 2v4h4"/></svg>
+        <section id="uploadSection" class="border-3 border-dashed rounded-2xl p-12 text-center transition-all duration-300 bg-white/50 hover:bg-white/80" style="border-color: #cbd5e0;">
+            <div class="mx-auto h-20 w-20 mb-6 p-4 rounded-full bg-gray-100/80" style="color: var(--accent-sage);">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
             </div>
-            <p class="mt-4" style="color: var(--text-soft);">
-                <span class="font-semibold" style="color: var(--accent-sage);">Drag & drop an image</span> or click a button below.
-            </p>
-            <div class="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
-                <label for="fileInput" class="w-full sm:w-auto cursor-pointer inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white transition-all" style="background-color: var(--text-dark);" onmouseover="this.style.backgroundColor='var(--accent-sage)'" onmouseout="this.style.backgroundColor='var(--text-dark)'">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
-                    Choose File
-                </label>
-                <label for="cameraInput" class="w-full sm:w-auto cursor-pointer inline-flex items-center justify-center px-6 py-3 border text-base font-medium rounded-md bg-white hover:bg-gray-50 transition-colors" style="color: var(--text-dark); border-color: #d1d5db;">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                    Capture with Camera
+            <h3 class="text-2xl font-semibold mb-2" style="color: var(--text-dark);">Upload Handwriting Sample</h3>
+            <p class="mb-8 text-gray-500">Drag & drop or select an image (JPG, PNG) for geometric analysis.</p>
+            
+            <div class="flex justify-center">
+                <label for="fileInput" class="cursor-pointer px-10 py-4 text-lg font-semibold rounded-xl text-white shadow-lg transition-all hover:shadow-xl hover:scale-105" style="background-color: var(--accent-sage);">
+                    Select Image File
                 </label>
             </div>
             <input type="file" id="fileInput" accept="image/*">
-            <input type="file" id="cameraInput" accept="image/*" capture="environment">
         </section>
         
         <section id="previewSection" class="hidden text-center fade-in">
-            <h2 class="text-3xl font-bold mb-4" style="color: var(--text-dark);">Image Preview</h2>
-            <img id="imagePreview" src="" alt="Handwriting preview" class="max-w-full max-h-64 rounded-lg shadow-lg mx-auto border-4 border-white">
-            <p id="previewFileName" class="text-gray-600 mt-3"></p>
-            <div class="mt-6 flex flex-col sm:flex-row gap-4 justify-center">
-                <button id="analyzeBtn" class="w-full sm:w-auto cursor-pointer inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white transition-all" style="background-color: var(--accent-sage);" onmouseover="this.style.backgroundColor='#7aaa7a'" onmouseout="this.style.backgroundColor='var(--accent-sage)'">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="m15.5 2-4 4"/><path d="M16 3h5v5"/><path d="M2 12a10 10 0 1 0 10-10"/></svg>
-                    Analyze Now
+            <div class="bg-white/60 p-4 rounded-2xl shadow-inner mb-8 inline-block">
+                <img id="imagePreview" src="" alt="Preview" class="max-h-80 rounded-xl object-contain mx-auto">
+            </div>
+            <div class="flex gap-4 justify-center">
+                <button id="analyzeBtn" class="px-8 py-4 text-lg font-semibold rounded-xl text-white shadow-lg transition-all hover:shadow-xl hover:scale-105" style="background-color: var(--accent-sage);">
+                    Run Quantitative Analysis
                 </button>
-                <button id="changeBtn" class="w-full sm:w-auto cursor-pointer inline-flex items-center justify-center px-6 py-3 border text-base font-medium rounded-md bg-white hover:bg-gray-50 transition-colors" style="color: var(--text-dark); border-color: #d1d5db;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/><path d="M21 21v-5h-5"/></svg>
-                    Choose Another
+                <button id="changeBtn" class="px-6 py-4 text-lg font-semibold rounded-xl bg-white border-2 transition-all hover:bg-gray-50" style="color: var(--text-soft); border-color: #e2e8f0;">
+                    Cancel
                 </button>
             </div>
         </section>
         
-        <section id="status" class="mt-6 text-center min-h-[80px]">
+        <section id="status" class="mt-8 text-center min-h-[60px]">
             <div id="loader" class="pen-loader hidden">
-                <svg>
-                    <path class="pen-path" d="M10,20 C40,0 60,0 90,20" stroke="var(--accent-clay)" stroke-width="4" fill="none" stroke-linecap="round"></path>
-                </svg>
+                <svg><path class="pen-path" d="M10,20 C40,0 60,0 90,20" stroke="var(--accent-sage)" stroke-width="4" fill="none" stroke-linecap="round"></path></svg>
+                <p class="text-sm mt-2 font-medium" style="color: var(--accent-sage);">Processing Dual-Pipeline Geometry...</p>
             </div>
-            <p id="errorMessage" class="font-medium" style="color: #d9534f;"></p>
+            <p id="errorMessage" class="font-medium text-red-600 bg-red-50 py-2 px-4 rounded-lg inline-block hidden"></p>
         </section>
 
-        <section id="resultsContainer" class="hidden mt-6 fade-in"></section>
+        <section id="resultsContainer" class="hidden mt-10 fade-in">
+             <h2 class="text-3xl font-bold text-center mb-8" style="color: var(--text-dark);">Extracted Feature Data</h2>
+             
+             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10" id="metricsGrid">
+                </div>
+
+             <div class="text-center">
+                <p class="text-sm text-gray-500 mb-4">Data has been logged to CSV for methodology defense.</p>
+                <button id="resetBtn" class="px-8 py-3 font-semibold rounded-xl bg-white border-2 transition-all hover:bg-gray-50 hover:border-gray-400" style="color: var(--text-dark); border-color: #e2e8f0;">
+                    Analyze Another Sample
+                </button>
+             </div>
+        </section>
 
     </main>
     
     <script>
-        const fileInput = document.getElementById('fileInput');
-        const cameraInput = document.getElementById('cameraInput');
-        const loader = document.getElementById('loader');
-        const errorMessage = document.getElementById('errorMessage');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const uploadSection = document.getElementById('uploadSection');
-        
-        const previewSection = document.getElementById('previewSection');
-        const imagePreview = document.getElementById('imagePreview');
-        const previewFileName = document.getElementById('previewFileName');
-        const analyzeBtn = document.getElementById('analyzeBtn');
-        const changeBtn = document.getElementById('changeBtn');
+        const elements = {
+            fileInput: document.getElementById('fileInput'),
+            loader: document.getElementById('loader'),
+            errorMessage: document.getElementById('errorMessage'),
+            resultsContainer: document.getElementById('resultsContainer'),
+            uploadSection: document.getElementById('uploadSection'),
+            previewSection: document.getElementById('previewSection'),
+            imagePreview: document.getElementById('imagePreview'),
+            analyzeBtn: document.getElementById('analyzeBtn'),
+            changeBtn: document.getElementById('changeBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            metricsGrid: document.getElementById('metricsGrid')
+        };
 
         let currentFile = null;
-        let chartInstance = null; // To hold the chart instance
+        const API_URL = 'http://127.0.0.1:8000/analyze_image';
 
-        // --- UPDATED API ENDPOINT FOR IMAGE ANALYSIS ---
-        const API_URL = 'http://127.0.0.1:8000/analyze/image';
+        // Event Listeners
+        elements.fileInput.addEventListener('change', (e) => prepareFile(e.target.files[0]));
+        elements.analyzeBtn.addEventListener('click', () => analyzeFile(currentFile));
+        elements.changeBtn.addEventListener('click', resetUI);
+        elements.resetBtn.addEventListener('click', resetUI);
 
-        fileInput.addEventListener('change', (e) => prepareFile(e.target.files[0]));
-        cameraInput.addEventListener('change', (e) => prepareFile(e.target.files[0]));
-        analyzeBtn.addEventListener('click', () => analyzeFile(currentFile));
-        changeBtn.addEventListener('click', resetUI);
-
-        uploadSection.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadSection.style.borderColor = 'var(--accent-sage)';
+        // Drag & Drop
+        ['dragover', 'dragleave', 'drop'].forEach(eventName => {
+            elements.uploadSection.addEventListener(eventName, preventDefaults, false);
         });
-        uploadSection.addEventListener('dragleave', () => {
-            uploadSection.style.borderColor = '#d1d5db';
-        });
-        uploadSection.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadSection.style.borderColor = '#d1d5db';
-            const file = e.dataTransfer.files[0];
-            prepareFile(file);
-        });
+        function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+        
+        elements.uploadSection.addEventListener('drop', (e) => prepareFile(e.dataTransfer.files[0]));
 
         function prepareFile(file) {
             if (!file || !file.type.startsWith('image/')) {
-                errorMessage.textContent = 'Please select a valid image file.';
+                showError('Please select a valid image file (JPG or PNG).');
                 return;
             }
             currentFile = file;
-            
-            errorMessage.textContent = '';
-            uploadSection.classList.add('hidden');
-            previewSection.classList.remove('hidden');
-            resultsContainer.classList.add('hidden');
-            resultsContainer.innerHTML = '';
-            
-            if (imagePreview.src) {
-                URL.revokeObjectURL(imagePreview.src);
-            }
-            imagePreview.src = URL.createObjectURL(file);
-            previewFileName.textContent = file.name;
+            hideError();
+            elements.uploadSection.classList.add('hidden');
+            elements.previewSection.classList.remove('hidden');
+            if (elements.imagePreview.src) URL.revokeObjectURL(elements.imagePreview.src);
+            elements.imagePreview.src = URL.createObjectURL(file);
         }
         
         function resetUI() {
             currentFile = null;
-            fileInput.value = '';
-            cameraInput.value = '';
-            uploadSection.classList.remove('hidden');
-            previewSection.classList.add('hidden');
-            resultsContainer.classList.add('hidden');
-            resultsContainer.innerHTML = '';
-            errorMessage.textContent = '';
-            if (imagePreview.src) {
-                URL.revokeObjectURL(imagePreview.src);
-                imagePreview.src = '';
-            }
-            if (chartInstance) {
-                chartInstance.destroy();
-                chartInstance = null;
-            }
+            elements.fileInput.value = ''; 
+            elements.uploadSection.classList.remove('hidden');
+            elements.previewSection.classList.add('hidden');
+            elements.resultsContainer.classList.add('hidden');
+            hideError();
         }
 
         async function analyzeFile(file) {
             if (!file) return;
-
-            loader.classList.remove('hidden');
-            errorMessage.textContent = 'Processing with Computer Vision...';
-            errorMessage.style.color = 'var(--text-soft)';
-            analyzeBtn.disabled = true;
-            changeBtn.disabled = true;
+            elements.loader.classList.remove('hidden');
+            hideError();
+            elements.analyzeBtn.disabled = true;
             
             const formData = new FormData();
             formData.append('file', file);
 
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: formData,
-                });
-
+                const response = await fetch(API_URL, { method: 'POST', body: formData });
+                
+                // 1. Check HTTP Status (Did the server crash?)
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Analysis failed. Please try another image.');
+                    throw new Error(`Server connection failed: ${response.status}`);
                 }
 
-                const data = await response.json();
-                console.log("Backend Response:", data); // Debugging line
-                displayResults(data);
-                resultsContainer.classList.remove('hidden');
-                errorMessage.textContent = '';
+                const jsonResponse = await response.json();
+
+                // 2. Check Logic Error (Did Python catch an exception?)
+                if (jsonResponse.error) {
+                    throw new Error(`Backend Error: ${jsonResponse.error}`);
+                }
+
+                // 3. Verify Data Exists
+                if (!jsonResponse.data) {
+                    throw new Error("Server returned no data.");
+                }
+
+                // If we get here, data is safe to use
+                displayResults(jsonResponse.data);
+                elements.previewSection.classList.add('hidden');
+                elements.resultsContainer.classList.remove('hidden');
 
             } catch (error) {
                 console.error(error);
-                errorMessage.textContent = `Error: ${error.message}`;
-                errorMessage.style.color = '#d9534f';
+                // Now you will see the REAL error message on screen
+                showError(error.message); 
             } finally {
-                loader.classList.add('hidden');
-                analyzeBtn.disabled = false;
-                changeBtn.disabled = false;
+                elements.loader.classList.add('hidden');
+                elements.analyzeBtn.disabled = false;
             }
         }
         
-        // --- UPDATED displayResults for NEW BACKEND STRUCTURE ---
         function displayResults(data) {
-            if (chartInstance) {
-                chartInstance.destroy();
-                chartInstance = null;
-            }
+            elements.metricsGrid.innerHTML = '';
             
-            // 1. Summary Section (Now located at data.summary)
-            let personalitySummaryHTML = '';
-            if (data.summary) {
-                personalitySummaryHTML = `
-                    <div class="bg-white/60 p-6 rounded-xl shadow-md text-center mb-6">
-                        <h4 class="text-xl font-bold mb-2" style="color: var(--text-dark);">Personality Summary</h4>
-                        <p class="text-lg" style="color: var(--accent-clay); font-family: 'Playfair Display', serif;">
-                            "${data.summary}"
-                        </p>
+            // Define display properties for the 8 parameters
+            const metricDefs = [
+                { key: 'Word_Spacing_px', label: 'Word Spacing', unit: 'px', desc: 'Avg distance between words', icon: '↔️' },
+                { key: 'T_Crossing', label: 'T-Crossings', unit: 'count', desc: 'Detected horizontal strokes', icon: 't' },
+                { key: 'Loops', label: 'Loop Count', unit: 'count', desc: 'Closed inner shapes (e, o, a)', icon: '⭕' },
+                { key: 'Diacritics', label: 'Diacritics', unit: 'count', desc: 'Small detached dots (i, j)', icon: '•' },
+                { key: 'Pen_Lifts', label: 'Pen Lifts', unit: 'count', desc: 'Total distinct strokes', icon: '✒️' },
+                { key: 'Tremors', label: 'Tremor Index', unit: '0.0 - 1.0', desc: 'Line shakiness/jaggedness', icon: '〰️' },
+                { key: 'Embellishments', label: 'Embellishment Idx', unit: '0.0 - 1.0', desc: 'Geometric complexity', icon: '➰' },
+                { key: 'Retouching', label: 'Retouching Idx', unit: '0.0 - 1.0', desc: 'Overwritten areas', icon: '✏️' }
+            ];
+
+            metricDefs.forEach(def => {
+                const val = data[def.key] !== undefined ? data[def.key] : 'N/A';
+                const card = document.createElement('div');
+                // Styling for the data card
+                card.className = 'metric-card bg-white p-6 rounded-2xl border-2 border-gray-100 shadow-sm flex flex-col items-center text-center';
+                card.innerHTML = `
+                    <div class="text-3xl mb-2">${def.icon}</div>
+                    <h4 class="font-bold text-gray-700 mb-1">${def.label}</h4>
+                    <div class="font-bold text-3xl mono-font my-2" style="color: var(--text-dark);">
+                        ${val} 
                     </div>
+                    <span class="text-xs font-semibold px-2 py-1 bg-gray-100 rounded-full text-gray-500 uppercase tracking-wider">${def.unit}</span>
+                    <p class="text-xs text-gray-400 mt-3">${def.desc}</p>
                 `;
-            }
-
-            resultsContainer.innerHTML = `
-                ${personalitySummaryHTML} 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="bg-white/60 p-6 rounded-xl shadow-md">
-                        <h3 class="text-2xl font-bold mb-4" style="color: var(--text-dark);">Trait Analysis</h3>
-                        <div id="traitList" class="space-y-4"></div>
-                    </div>
-                    <div class="bg-white/60 p-6 rounded-xl shadow-md flex flex-col items-center min-h-[350px]">
-                         <h3 class="text-2xl font-bold mb-4" style="color: var(--text-dark);">Visual Profile</h3> 
-                         <div class="relative w-full h-full max-w-[300px]"> 
-                            <canvas id="radarChart"></canvas>
-                         </div>
-                    </div>
-                </div>
-                <div id="diagnosticsDetails" class="mt-6 bg-white/60 p-6 rounded-xl shadow-md"></div> 
-            `;
-            
-            // 2. Trait Analysis (Now reading from data.metrics)
-            const traitList = document.getElementById('traitList');
-            const diagnosticsDetailsContainer = document.getElementById('diagnosticsDetails'); 
-            
-            // Mapping valid metric keys for display
-            const traitDisplayOrder = {
-                'total_loops': 'Total Loops', 
-                'slant_degrees': 'Slant Angle (°)', 
-                'spacing_mean_word': 'Avg Word Spacing (px)',
-                'pressure_index': 'Pressure Index (0-1)',
-                'retouching_index': 'Retouching Index',
-                'tremor_index': 'Tremor Index'
-            };
-
-            const metrics = data.metrics || {};
-
-            for (const key in traitDisplayOrder) {
-                 if (metrics.hasOwnProperty(key)) { 
-                    traitList.innerHTML += createTraitItem(key, metrics[key], traitDisplayOrder[key]);
-                }
-            }
-            
-            // 3. Diagnostics / Indicators (Now reading from data.indicators)
-            // Indicators are now a LIST of strings, not a single string
-            let personalityIndicatorsHTML = '';
-            if (data.indicators && data.indicators.length > 0) {
-                const indicatorsList = data.indicators
-                    .map(line => `<li>${line}</li>`) 
-                    .join('');
-                
-                personalityIndicatorsHTML = `
-                    <div class="mb-6 border-b pb-6" style="border-color: rgba(0,0,0,0.1);">
-                         <h4 class="text-xl font-bold mb-3 text-center" style="color: var(--text-dark);">Key Indicators</h4>
-                         <div id="personalityIndicators" class="text-left">
-                             <ul>${indicatorsList}</ul>
-                         </div>
-                     </div>
-                `;
-            } else {
-                 personalityIndicatorsHTML = `<p class="text-center text-gray-500 mb-6">No specific indicators found.</p>`;
-            }
-
-
-            // 4. OCEAN Scores (Now reading from data.ocean_scores)
-            let oceanScoresHTML = '<h4 class="text-xl font-bold mb-4 text-center" style="color: var(--text-dark);">OCEAN Scores (1-5)</h4><div class="grid grid-cols-5 gap-2 text-center">';
-            const oceanTraits = ['Openness', 'Conscientiousness', 'Extraversion', 'Agreeableness', 'Neuroticism'];
-            const scores = data.ocean_scores || {};
-
-            oceanTraits.forEach(trait => {
-                const score = scores[trait] !== undefined ? scores[trait] : 3.0; 
-                oceanScoresHTML += `
-                    <div class="p-2 rounded-lg bg-gray-50/50">
-                        <p class="text-sm font-medium" style="color: var(--text-soft);">${trait}</p>
-                        <p class="font-bold text-lg" style="color: var(--text-dark);">${score.toFixed(1)}</p>
-                    </div>
-                `;
+                elements.metricsGrid.appendChild(card);
             });
-            oceanScoresHTML += '</div>';
-
-            diagnosticsDetailsContainer.innerHTML = `
-                <h3 class="text-2xl font-bold mb-4" style="color: var(--text-dark);">Detailed Diagnostics</h3>
-                ${personalityIndicatorsHTML} 
-                ${oceanScoresHTML} 
-            `; 
-            
-            createRadarChart(data); 
         }
-        
-        function createTraitItem(key, value, displayLabel) {
-            const label = displayLabel || key; 
-            let formattedValue = (typeof value === 'number') ? value.toFixed(2) : (value ?? 'N/A');
-            
-            return `
-                <div class="flex justify-between items-baseline border-b pb-2" style="border-color: rgba(0,0,0,0.08);">
-                    <span class="font-medium flex-1" style="color: var(--text-soft);">${label}</span>
-                    <span class="font-bold text-xl text-right" style="color: var(--text-dark);">${formattedValue}</span>
-                </div>
-            `;
+
+        function showError(msg) {
+            elements.errorMessage.textContent = msg;
+            elements.errorMessage.classList.remove('hidden');
         }
-        
-        // --- UPDATED Radar Chart for New Structure ---
-        function createRadarChart(data) {
-             const ctx = document.getElementById('radarChart')?.getContext('2d');
-             if (!ctx) return; 
-
-            const scores = data.ocean_scores || {};
-            const openness = scores.Openness ?? 3.0;
-            const conscientiousness = scores.Conscientiousness ?? 3.0;
-            const extraversion = scores.Extraversion ?? 3.0;
-            const agreeableness = scores.Agreeableness ?? 3.0;
-            const neuroticism = scores.Neuroticism ?? 3.0;
-
-            // Map 1-5 scale to 0-1 for chart visualization
-            const mapScore = (score) => (score - 1) / 4;
-            
-            const organized = mapScore(conscientiousness); 
-            const creative = mapScore(openness);
-            const social = mapScore(extraversion);
-            const disciplined = mapScore(conscientiousness); 
-            const energetic = (mapScore(extraversion) + (1 - mapScore(neuroticism))) / 2; 
-
-            chartInstance = new Chart(ctx, { 
-                type: 'radar',
-                data: {
-                    labels: ['Organized', 'Creative', 'Social', 'Disciplined', 'Energetic'],
-                    datasets: [{
-                        label: 'Visual Profile', 
-                        data: [organized, creative, social, disciplined, energetic],
-                        backgroundColor: 'rgba(143, 188, 143, 0.3)',
-                        borderColor: 'rgba(143, 188, 143, 1)',
-                        pointBackgroundColor: 'rgba(143, 188, 143, 1)',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgba(143, 188, 143, 1)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false, 
-                    layout: { padding: 5 },
-                    scales: {
-                        r: {
-                            angleLines: { color: 'rgba(0,0,0,0.1)' },
-                            grid: { color: 'rgba(0,0,0,0.1)' },
-                            pointLabels: { 
-                                padding: 15, 
-                                font: { size: 13, family: "'Playfair Display', serif" }, 
-                                color: 'var(--text-dark)' 
-                            },
-                            ticks: { 
-                                display: false, 
-                                stepSize: 0.25, 
-                                beginAtZero: true, 
-                                max: 1 
-                            } 
-                        }
-                    },
-                    plugins: { legend: { display: false } }
-                }
-            });
+        function hideError() {
+            elements.errorMessage.textContent = '';
+            elements.errorMessage.classList.add('hidden');
         }
     </script>
 </body>

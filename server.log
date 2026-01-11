@@ -1,0 +1,91 @@
+2025-12-31 15:19:03,202 - [INFO] - Backend Server Started. Waiting for images...
+2025-12-31 15:19:19,487 - [INFO] - [>>] Received Request: 097 (1).png
+2025-12-31 15:19:19,506 - [INFO] - [..] Starting dual-pipeline analysis...
+2025-12-31 15:19:22,356 - [INFO] - [OK] Success! Data extracted: {'Loops': 68, 'Embellishments': np.float64(0.7175), 'Diacritics': 45, 'Retouching': 0.9699, 'Word_Spacing_px': np.float64(52.97), 'T_Crossing': 34, 'Pen_Lifts': 509, 'Tremors': 0.1435}
+2025-12-31 15:19:22,362 - [INFO] - [SAVE] Saved to analysis_results.csv
+2025-12-31 15:19:22,409 - [INFO] - [XX] Temp file cleaned up.
+2025-12-31 15:39:17,402 - [INFO] - [>>] Received Request: 097 (1).png
+2025-12-31 15:39:17,431 - [INFO] - [..] Starting professional analysis...
+2025-12-31 15:39:19,565 - [INFO] - [OK] Analysis Complete.
+2025-12-31 15:39:19,569 - [INFO] - [SAVE] Saved to analysis_results.csv
+2025-12-31 15:39:19,599 - [INFO] - [XX] Cleanup done.
+2025-12-31 15:40:03,235 - [INFO] - [>>] Received Request: 098.png
+2025-12-31 15:40:03,255 - [INFO] - [..] Starting professional analysis...
+2025-12-31 15:40:05,155 - [INFO] - [OK] Analysis Complete.
+2025-12-31 15:40:05,170 - [INFO] - [SAVE] Saved to analysis_results.csv
+2025-12-31 15:40:05,229 - [INFO] - [XX] Cleanup done.
+2025-12-31 15:52:13,249 - [INFO] - [>>] Received Request: 097 (1).png
+2025-12-31 15:52:13,277 - [INFO] - [..] Starting professional analysis...
+2025-12-31 15:52:15,507 - [INFO] - [OK] Analysis Complete.
+2025-12-31 15:52:15,510 - [INFO] - [SAVE] Saved to analysis_results.csv
+2025-12-31 15:52:15,523 - [INFO] - [XX] Cleanup done.
+2025-12-31 15:53:37,815 - [INFO] - [>>] Received Request: 098.png
+2025-12-31 15:53:37,853 - [INFO] - [..] Starting professional analysis...
+2025-12-31 15:53:42,223 - [INFO] - [OK] Analysis Complete.
+2025-12-31 15:53:42,230 - [INFO] - [SAVE] Saved to analysis_results.csv
+2025-12-31 15:53:42,279 - [INFO] - [XX] Cleanup done.
+2026-01-05 17:42:29,317 - [INFO] - [>>] Received Request: 097 (1).png
+2026-01-05 17:42:30,737 - [INFO] - [..] Starting professional analysis...
+2026-01-05 17:42:41,005 - [INFO] - [OK] Analysis Complete.
+2026-01-05 17:42:41,011 - [INFO] - [SAVE] Saved to analysis_results.csv
+2026-01-05 17:42:41,017 - [INFO] - [XX] Cleanup done.
+2026-01-05 17:44:57,112 - [INFO] - [>>] Received Request: 099.png
+2026-01-05 17:44:57,151 - [INFO] - [..] Starting professional analysis...
+2026-01-05 17:44:59,334 - [INFO] - [OK] Analysis Complete.
+2026-01-05 17:44:59,343 - [INFO] - [SAVE] Saved to analysis_results.csv
+2026-01-05 17:44:59,355 - [INFO] - [XX] Cleanup done.
+2026-01-05 17:45:11,020 - [INFO] - [>>] Received Request: 100.png
+2026-01-05 17:45:11,032 - [INFO] - [..] Starting professional analysis...
+2026-01-05 17:45:12,274 - [INFO] - [OK] Analysis Complete.
+2026-01-05 17:45:12,276 - [INFO] - [SAVE] Saved to analysis_results.csv
+2026-01-05 17:45:12,296 - [INFO] - [XX] Cleanup done.
+2026-01-05 17:45:24,644 - [INFO] - [>>] Received Request: 101.png
+2026-01-05 17:45:24,673 - [INFO] - [..] Starting professional analysis...
+2026-01-05 17:45:26,541 - [INFO] - [OK] Analysis Complete.
+2026-01-05 17:45:26,544 - [INFO] - [SAVE] Saved to analysis_results.csv
+2026-01-05 17:45:26,561 - [INFO] - [XX] Cleanup done.
+2026-01-05 17:45:38,656 - [INFO] - [>>] Received Request: 103.png
+2026-01-05 17:45:38,676 - [INFO] - [..] Starting professional analysis...
+2026-01-05 17:45:39,993 - [INFO] - [OK] Analysis Complete.
+2026-01-05 17:45:40,000 - [INFO] - [SAVE] Saved to analysis_results.csv
+2026-01-05 17:45:40,022 - [INFO] - [XX] Cleanup done.
+2026-01-05 17:45:49,705 - [INFO] - [>>] Received Request: 104.png
+2026-01-05 17:45:49,732 - [INFO] - [..] Starting professional analysis...
+2026-01-05 17:45:51,289 - [INFO] - [OK] Analysis Complete.
+2026-01-05 17:45:51,294 - [INFO] - [SAVE] Saved to analysis_results.csv
+2026-01-05 17:45:51,306 - [INFO] - [XX] Cleanup done.
+2026-01-08 20:11:06,317 - [INFO] - [>>] Received Request: 100.png
+2026-01-08 20:11:06,408 - [INFO] - [..] Starting professional analysis...
+2026-01-08 20:11:14,953 - [INFO] - [OK] Analysis Complete.
+2026-01-08 20:11:15,201 - [INFO] - [SAVE] Saved to analysis_results.csv
+2026-01-08 20:11:15,424 - [INFO] - [XX] Cleanup done.
+2026-01-08 20:16:55,295 - [INFO] - [>>] Received Request: 099.png
+2026-01-08 20:16:55,310 - [INFO] - [..] Starting professional analysis...
+2026-01-08 20:16:56,573 - [INFO] - [OK] Analysis Complete.
+2026-01-08 20:16:56,578 - [WARNING] - [WARN] CSV File Locked.
+2026-01-08 20:16:56,601 - [INFO] - [XX] Cleanup done.
+2026-01-08 20:17:30,584 - [INFO] - [>>] Received Request: 101.png
+2026-01-08 20:17:30,622 - [INFO] - [..] Starting professional analysis...
+2026-01-08 20:17:32,279 - [INFO] - [OK] Analysis Complete.
+2026-01-08 20:17:32,280 - [WARNING] - [WARN] CSV File Locked.
+2026-01-08 20:17:32,296 - [INFO] - [XX] Cleanup done.
+2026-01-08 20:17:56,453 - [INFO] - [>>] Received Request: 103.png
+2026-01-08 20:17:56,476 - [INFO] - [..] Starting professional analysis...
+2026-01-08 20:17:57,957 - [INFO] - [OK] Analysis Complete.
+2026-01-08 20:17:57,958 - [WARNING] - [WARN] CSV File Locked.
+2026-01-08 20:17:57,969 - [INFO] - [XX] Cleanup done.
+2026-01-08 20:18:20,675 - [INFO] - [>>] Received Request: 104.png
+2026-01-08 20:18:20,689 - [INFO] - [..] Starting professional analysis...
+2026-01-08 20:18:21,590 - [INFO] - [OK] Analysis Complete.
+2026-01-08 20:18:21,595 - [WARNING] - [WARN] CSV File Locked.
+2026-01-08 20:18:21,603 - [INFO] - [XX] Cleanup done.
+2026-01-08 21:29:19,519 - [INFO] - [>>] Received Request: 104.png
+2026-01-08 21:29:19,535 - [INFO] - [..] Starting professional analysis...
+2026-01-08 21:29:21,058 - [INFO] - [OK] Analysis Complete.
+2026-01-08 21:29:21,062 - [INFO] - [SAVE] Saved to analysis_results.csv
+2026-01-08 21:29:21,068 - [INFO] - [XX] Cleanup done.
+2026-01-08 21:31:03,119 - [INFO] - [>>] Received Request: 103.png
+2026-01-08 21:31:03,136 - [INFO] - [..] Starting professional analysis...
+2026-01-08 21:31:04,695 - [INFO] - [OK] Analysis Complete.
+2026-01-08 21:31:04,706 - [INFO] - [SAVE] Saved to analysis_results.csv
+2026-01-08 21:31:04,714 - [INFO] - [XX] Cleanup done.

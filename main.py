@@ -1,263 +1,335 @@
-import io
+from fastapi import FastAPI, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 import cv2
 import numpy as np
-import traceback
-import math
-import hashlib
-import json
-import sqlite3
-from contextlib import asynccontextmanager
-from fastapi import FastAPI, File, UploadFile, HTTPException, Body
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import Optional, Dict, List
-from skimage.morphology import skeletonize
-from skimage.filters import threshold_otsu
+import csv
+import logging
+import shutil
+import os
+import sys
 
-# --- CONFIGURATION ---
-CACHE_DB_PATH = "analysis_cache.db"
-
-# --- DATABASE SETUP ---
-def init_db():
-    try:
-        conn = sqlite3.connect(CACHE_DB_PATH)
-        c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS results 
-                     (hash TEXT PRIMARY KEY, json_data TEXT)''')
-        conn.commit()
-        conn.close()
-        print("Local database initialized.")
-    except Exception as e:
-        print(f"Database error: {e}")
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    init_db()
-    yield
-
-app = FastAPI(title="Local Graphology Engine", version="5.0.0", lifespan=lifespan)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], allow_credentials=True,
-    allow_methods=["*"], allow_headers=["*"]
+# --- 1. SETUP LOGGING (Windows-Safe) ---
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - [%(levelname)s] - %(message)s',
+    handlers=[
+        logging.FileHandler("server.log", encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
+    ]
 )
 
-# --- DATA MODELS ---
+app = FastAPI()
 
-# 1. The Raw Metrics (Parameters you can upload via JSON)
-class HandwritingMetrics(BaseModel):
-    total_loops: float
-    slant_degrees: float
-    spacing_mean_word: float
-    retouching_index: float  # 0.0 to 1.0
-    tremor_index: float      # 0.0 to 1.0
-    pressure_index: float    # 0.0 (Light) to 1.0 (Heavy)
-    baseline_angle: float    # degrees
-    
-# 2. The Output Format (OCEAN Scores)
-class PersonalityProfile(BaseModel):
-    metrics: HandwritingMetrics
-    ocean_scores: Dict[str, float]  # 1.0 to 5.0
-    summary: str
-    indicators: List[str]
+# --- 2. ENABLE CORS ---
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# --- LOCAL COMPUTER VISION ENGINE (No AI API) ---
-def extract_local_metrics(image_bytes: bytes) -> HandwritingMetrics:
-    # 1. Read Image
-    nparr = np.frombuffer(image_bytes, np.uint8)
-    img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    if img is None: raise ValueError("Invalid Image")
-    
-    # 2. Preprocessing
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    
-    # Pressure Estimation (Darker pixels = heavier pressure)
-    # We invert gray so ink is bright, measuring mean intensity of ink pixels
-    _, binary_inv = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
-    ink_pixels = gray[binary_inv > 0]
-    # Lower value in gray means darker ink. We invert this logic for index.
-    # 0 = white paper, 255 = black ink.
-    if len(ink_pixels) > 0:
-        mean_intensity = np.mean(ink_pixels)
-        pressure_idx = 1.0 - (mean_intensity / 255.0) # 1.0 is pure black (heavy)
-    else:
-        pressure_idx = 0.5
-
-    # 3. Loops Detection (Using Contours)
-    # Find contours on the binary inverted image
-    contours, hierarchy = cv2.findContours(binary_inv, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-    
-    loop_count = 0
-    # Hierarchy: [Next, Previous, First_Child, Parent]
-    # A contour is a "hole" (loop) if it has a parent.
-    if hierarchy is not None:
-        for i in range(len(contours)):
-            parent_idx = hierarchy[0][i][3]
-            if parent_idx != -1: # It has a parent, so it's an internal hole
-                area = cv2.contourArea(contours[i])
-                if 10 < area < 500: # Filter noise and huge shapes
-                    loop_count += 1
-    
-    # 4. Slant Calculation (Skeleton Method)
-    skeleton = skeletonize(binary_inv > 0)
-    # Sobel gradients
-    dy = cv2.Sobel(skeleton.astype(np.float32), cv2.CV_32F, 0, 1)
-    dx = cv2.Sobel(skeleton.astype(np.float32), cv2.CV_32F, 1, 0)
-    angles = np.degrees(np.arctan2(dy, dx))
-    # Filter for vertical-ish strokes
-    valid_angles = angles[((angles > 30) & (angles < 150)) | ((angles < -30) & (angles > -150))]
-    slant = 0.0
-    if len(valid_angles) > 0:
-        raw_slant = np.median(90 - np.abs(valid_angles))
-        # Determine direction based on simple logic or assume right slant dominance for average
-        slant = raw_slant # Simplified for robustness
-        
-    # 5. Spacing & Baseline
-    # Create bounding boxes for words (using dilation to connect letters)
-    kernel = np.ones((5, 20), np.uint8) # Wide kernel to connect letters
-    dilated = cv2.dilate(binary_inv, kernel, iterations=1)
-    word_contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
-    spacings = []
-    # Sort contours left-to-right, top-to-bottom logic needed for true text,
-    # simplified here to average distance between adjacent boxes in x-plane
-    sorted_cnts = sorted(word_contours, key=lambda c: cv2.boundingRect(c)[0])
-    for i in range(len(sorted_cnts)-1):
-        x1, _, w1, _ = cv2.boundingRect(sorted_cnts[i])
-        x2, _, _, _ = cv2.boundingRect(sorted_cnts[i+1])
-        dist = x2 - (x1 + w1)
-        if 5 < dist < 200: # Valid spacing
-            spacings.append(dist)
+# --- 3. FEATURE EXTRACTION LOGIC ---
+class HandwritingFeatures:
+    def __init__(self, image_path):
+        self.image_path = image_path
+        original_img = cv2.imread(image_path)
+        if original_img is None:
+            raise ValueError("Image not found.")
             
-    avg_spacing = np.mean(spacings) if spacings else 20.0
+        # Normalization
+        height, width = original_img.shape[:2]
+        target_width = 1000
+        scale = target_width / width
+        new_height = int(height * scale)
+        self.original = cv2.resize(original_img, (target_width, new_height))
+        self.gray = cv2.cvtColor(self.original, cv2.COLOR_BGR2GRAY)
+        
+        # Detail Layer
+        self.blur_detail = cv2.GaussianBlur(self.gray, (1, 1), 0)
+        self.thresh_detail = cv2.adaptiveThreshold(
+            self.blur_detail, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+            cv2.THRESH_BINARY_INV, 21, 10
+        )
+        self.contours_detail, self.hierarchy_detail = cv2.findContours(
+            self.thresh_detail, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE
+        )
+
+        # Structure Layer
+        self.blur_struct = cv2.GaussianBlur(self.gray, (5, 5), 0)
+        self.thresh_struct = cv2.adaptiveThreshold(
+            self.blur_struct, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+            cv2.THRESH_BINARY_INV, 25, 15
+        )
+        kernel = np.ones((3,3), np.uint8)
+        self.thresh_struct = cv2.morphologyEx(self.thresh_struct, cv2.MORPH_OPEN, kernel, iterations=1)
+        self.contours_struct, _ = cv2.findContours(
+            self.thresh_struct, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
+
+        # State for advanced metrics
+        self.loop_circularities = []
+        self.spacing_variances = []
+
+    def get_loops(self):
+        count = 0
+        self.loop_circularities = [] # Reset
+        if self.hierarchy_detail is not None:
+            for i in range(len(self.contours_detail)):
+                if self.hierarchy_detail[0][i][3] != -1:
+                    c = self.contours_detail[i]
+                    area = cv2.contourArea(c)
+                    if 40 < area < 1000:
+                        perimeter = cv2.arcLength(c, True)
+                        if perimeter == 0: continue
+                        circularity = (4 * np.pi * area) / (perimeter ** 2)
+                        
+                        hull = cv2.convexHull(c)
+                        hull_area = cv2.contourArea(hull)
+                        if hull_area == 0: continue
+                        solidity = area / hull_area
+                        
+                        if circularity > 0.4 and solidity > 0.6:
+                            count += 1
+                            self.loop_circularities.append(circularity)
+        return count
+
+    def get_diacritics(self):
+        count = 0
+        if not self.contours_detail: return 0
+        areas = [cv2.contourArea(c) for c in self.contours_detail]
+        mean_area = np.mean(areas) if areas else 50
+        for c in self.contours_detail:
+            area = cv2.contourArea(c)
+            if 10 < area < (mean_area * 0.5):
+                hull = cv2.convexHull(c)
+                hull_area = cv2.contourArea(hull)
+                if hull_area == 0: continue
+                solidity = area / hull_area
+                if solidity > 0.5:
+                    count += 1
+        return count
+
+    def get_tremors(self):
+        score = 0
+        valid_contours = 0
+        for c in self.contours_detail:
+            if cv2.contourArea(c) > 50:
+                valid_contours += 1
+                perimeter = cv2.arcLength(c, True)
+                approx = cv2.approxPolyDP(c, 0.04 * perimeter, True)
+                score += len(approx) / (len(c) + 1)
+        return round(score / valid_contours, 4) if valid_contours > 0 else 0
+
+    def get_embellishments(self):
+        scores = []
+        for c in self.contours_detail:
+            area = cv2.contourArea(c)
+            if area > 30:
+                perimeter = cv2.arcLength(c, True)
+                if perimeter > 0:
+                    circularity = (4 * np.pi * area) / (perimeter ** 2)
+                    scores.append(1 - circularity)
+        return round(np.mean(scores), 4) if scores else 0
+
+    def get_word_spacing_stats(self):
+        # Returns (Mean Spacing, Standard Deviation)
+        kernel = np.ones((4, 10), np.uint8) 
+        dilated = cv2.dilate(self.thresh_struct, kernel, iterations=1)
+        word_contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        boxes = [cv2.boundingRect(c) for c in word_contours if cv2.contourArea(c) > 100]
+        boxes.sort(key=lambda x: x[1])
+        
+        lines = {}
+        for box in boxes:
+            y_center = box[1] + box[3]//2
+            found = False
+            for y_key in lines:
+                if abs(y_key - y_center) < 20: 
+                    lines[y_key].append(box)
+                    found = True
+                    break
+            if not found:
+                lines[y_center] = [box]
+        
+        spacings = []
+        for y_key in lines:
+            line = sorted(lines[y_key], key=lambda x: x[0])
+            for i in range(len(line) - 1):
+                dist = line[i+1][0] - (line[i][0] + line[i][2])
+                if 5 < dist < 300: 
+                    spacings.append(dist)
+        
+        if not spacings: return 0, 0
+        return round(np.mean(spacings), 2), round(np.std(spacings), 2)
+
+    def get_pen_lifts(self):
+        valid_strokes = [c for c in self.contours_detail if cv2.contourArea(c) > 15]
+        return len(valid_strokes)
+
+    def get_t_crossings(self):
+        lines = cv2.HoughLinesP(self.thresh_struct, 1, np.pi / 180, 
+                               threshold=50, minLineLength=15, maxLineGap=3)
+        count = 0
+        if lines is not None:
+            for line in lines:
+                x1, y1, x2, y2 = line[0]
+                length = np.sqrt((x2 - x1)**2 + (y2 - y1)**2)
+                angle = np.abs(np.degrees(np.arctan2(y2 - y1, x2 - x1)))
+                if angle < 20 and 15 < length < 60:
+                    count += 1
+        return count
+
+    def get_retouching(self):
+        edges = cv2.Canny(self.blur_detail, 100, 200)
+        edge_pixels = np.count_nonzero(edges)
+        ink_pixels = np.count_nonzero(self.thresh_detail)
+        return round(edge_pixels / ink_pixels, 4) if ink_pixels > 0 else 0
+
+    # --- PROFESSIONAL INTERPRETATION LOGIC (From DOCX) ---
+    def generate_professional_report(self):
+        # 1. Gather Raw Metrics
+        loop_count = self.get_loops()
+        mean_spacing, std_dev_spacing = self.get_word_spacing_stats()
+        
+        raw = {
+            "Loops": loop_count,
+            "Embellishments": self.get_embellishments(),
+            "Diacritics": self.get_diacritics(),
+            "Retouching": self.get_retouching(),
+            "Word_Spacing_px": mean_spacing,
+            "Spacing_Consistency": std_dev_spacing,
+            "T_Crossing": self.get_t_crossings(),
+            "Pen_Lifts": self.get_pen_lifts(),
+            "Tremors": self.get_tremors()
+        }
+
+        # 2. Map to Document Categories
+        categories = {}
+
+        # -- LOOPS (Narrow, Wide, Angular, No loops) --
+        if raw["Loops"] < 10:
+            categories["Loop_Style"] = "No loops / Retracted"
+        else:
+            avg_circ = np.mean(self.loop_circularities) if self.loop_circularities else 0
+            if avg_circ > 0.8: categories["Loop_Style"] = "Wide Loops (Round)"
+            elif avg_circ > 0.6: categories["Loop_Style"] = "Narrow Loops"
+            else: categories["Loop_Style"] = "Angular / Compressed Loops"
+
+        # -- WORD SPACING (Narrow, Normal, Wide, Inconsistent) --
+        # Using Std Dev to detect inconsistency
+        if raw["Spacing_Consistency"] > 25: 
+            categories["Spacing_Type"] = "Inconsistent"
+        elif raw["Word_Spacing_px"] < 40: 
+            categories["Spacing_Type"] = "Narrow"
+        elif raw["Word_Spacing_px"] > 65: 
+            categories["Spacing_Type"] = "Wide"
+        else: 
+            categories["Spacing_Type"] = "Normal"
+
+        # -- TREMORS (Abundant, Less Prevalent) --
+        if raw["Tremors"] > 0.18:
+            categories["Tremors_Category"] = "Abundant (Shaky)"
+        else:
+            categories["Tremors_Category"] = "Less Prevalent (Stable)"
+
+        # -- EMBELLISHMENTS (Abundant, Less Prevalent) --
+        if raw["Embellishments"] > 0.70:
+            categories["Embellishments_Category"] = "Abundant (Decorated)"
+        else:
+            categories["Embellishments_Category"] = "Less Prevalent (Simple)"
+
+        # -- PEN LIFTS (Abundant, Less Prevalent) --
+        # High count = Print (Abundant lifts). Low count = Cursive (Less lifts).
+        if raw["Pen_Lifts"] > 300: 
+            categories["Pen_Lifts_Category"] = "Abundant (Disconnected)"
+        else:
+            categories["Pen_Lifts_Category"] = "Less Prevalent (Fluid)"
+
+        # -- RETOUCHING (Abundant, Less Prevalent) --
+        if raw["Retouching"] > 0.75:
+            categories["Retouching_Category"] = "Abundant (Overwritten)"
+        else:
+            categories["Retouching_Category"] = "Less Prevalent (Clean)"
+
+        # -- T-CROSSINGS (High/Middle/Low - Proxy via Count) --
+        # Note: Computer vision cannot easily detect "Height on stem" without OCR.
+        # We classify by FREQUENCY as a proxy for "Attention to detail".
+        if raw["T_Crossing"] > 20:
+            categories["T_Crossing_Frequency"] = "Frequent (High Attention)"
+        else:
+            categories["T_Crossing_Frequency"] = "Sparse (Low Attention)"
+
+        # -- DIACRITICS (Proper/Displaced - Proxy via Count) --
+        if raw["Diacritics"] > 20:
+            categories["Diacritics_Category"] = "Abundant (Precise)"
+        else:
+            categories["Diacritics_Category"] = "Less Prevalent (Omitted)"
+
+        return {**raw, **categories}
+
+# --- 4. API ENDPOINTS ---
+# --- 4. API ENDPOINTS ---
+@app.post("/analyze_image")
+async def analyze_image(file: UploadFile = File(...)):
+    logging.info(f"[>>] Received Request: {file.filename}")
     
-    return HandwritingMetrics(
-        total_loops=float(loop_count),
-        slant_degrees=float(slant),
-        spacing_mean_word=float(avg_spacing),
-        retouching_index=0.1, # Hard to detect without tablet data, default low
-        tremor_index=0.1,     # Hard to detect with simple CV, default low
-        pressure_index=float(pressure_idx),
-        baseline_angle=0.0
-    )
-
-# --- THE RULE ENGINE (Based on your DOCX) ---
-def apply_handwriting_rules(m: HandwritingMetrics) -> PersonalityProfile:
-    scores = {
-        "Openness": 3.0, "Conscientiousness": 3.0, "Extraversion": 3.0,
-        "Agreeableness": 3.0, "Neuroticism": 3.0
-    }
-    indicators = []
-
-    # 1. LOOPS (Reflects expression/fluency)
-    # Table: "Closed or semi-closed curved formations... Reflects expressive behavior"
-    if m.total_loops > 30:
-        scores["Openness"] += 0.8
-        scores["Extraversion"] += 0.5
-        indicators.append("High loop frequency indicates expressiveness and creativity.")
-    elif m.total_loops < 10:
-        scores["Conscientiousness"] += 0.5
-        scores["Extraversion"] -= 0.3
-        indicators.append("Few loops suggest practicality and simplified thinking.")
-
-    # 2. SPACING (Reflects spatial organization/pacing)
-    # Table: "Mean spacing distance... Reflects spatial organisation"
-    if m.spacing_mean_word > 40: # Wide spacing
-        scores["Openness"] += 0.5 # Independence
-        scores["Extraversion"] -= 0.4
-        indicators.append("Wide word spacing suggests a need for personal space and independence.")
-    elif m.spacing_mean_word < 15: # Narrow spacing
-        scores["Extraversion"] += 0.6
-        scores["Agreeableness"] += 0.4
-        indicators.append("Narrow word spacing indicates a desire for social closeness.")
-
-    # 3. PRESSURE (Deduced from text density)
-    if m.pressure_index > 0.7: # Heavy
-        scores["Neuroticism"] -= 0.2
-        scores["Extraversion"] += 0.4
-        indicators.append("Heavy pressure suggests high energy and commitment.")
-    elif m.pressure_index < 0.4: # Light
-        scores["Neuroticism"] += 0.3
-        scores["Agreeableness"] += 0.2
-        indicators.append("Light pressure may indicate sensitivity or adaptability.")
-
-    # 4. SLANT (Ascender analysis)
-    # Table: "Ascender angle detection... Reflects emotional direction"
-    if m.slant_degrees > 15: # Right Slant
-        scores["Extraversion"] += 0.7
-        scores["Openness"] += 0.3
-        indicators.append("Rightward slant is strongly linked to sociability and emotional responsiveness.")
-    elif m.slant_degrees < -5: # Left Slant
-        scores["Extraversion"] -= 0.6
-        scores["Conscientiousness"] += 0.4
-        indicators.append("Leftward slant often indicates reserve and introspection.")
-    else: # Vertical
-        scores["Conscientiousness"] += 0.5
-        indicators.append("Vertical writing suggests logic and independence.")
-
-    # Clamp scores between 1.0 and 5.0
-    final_scores = {k: round(max(1.0, min(5.0, v)), 1) for k, v in scores.items()}
+    temp_filename = f"temp_{file.filename}"
+    with open(temp_filename, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
     
-    # Generate Summary
-    dominant_trait = max(final_scores, key=final_scores.get)
-    summary = f"The profile is characterized by high {dominant_trait}, suggesting a personality that is "
-    if dominant_trait == "Extraversion": summary += "social and energetic."
-    elif dominant_trait == "Conscientiousness": summary += "organized and disciplined."
-    elif dominant_trait == "Openness": summary += "creative and open to new ideas."
-    elif dominant_trait == "Agreeableness": summary += "cooperative and compassionate."
-    else: summary += "sensitive and emotionally reactive."
-
-    return PersonalityProfile(
-        metrics=m,
-        ocean_scores=final_scores,
-        summary=summary,
-        indicators=indicators
-    )
-
-# --- API ENDPOINTS ---
-
-@app.post("/analyze/image", response_model=PersonalityProfile)
-async def analyze_image_endpoint(file: UploadFile = File(...)):
-    content = await file.read()
-    
-    # Check cache
-    img_hash = hashlib.sha256(content).hexdigest()
-    conn = sqlite3.connect(CACHE_DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT json_data FROM results WHERE hash=?", (img_hash,))
-    row = cursor.fetchone()
-    
-    if row:
-        conn.close()
-        print("Returning cached result.")
-        return PersonalityProfile.model_validate_json(row[0])
-    
-    # Local Processing (No API Key)
     try:
-        raw_metrics = extract_local_metrics(content)
-        profile = apply_handwriting_rules(raw_metrics)
+        logging.info("[..] Starting professional analysis...")
         
-        # Save to cache
-        cursor.execute("INSERT OR REPLACE INTO results VALUES (?, ?)", 
-                      (img_hash, profile.model_dump_json()))
-        conn.commit()
-        conn.close()
+        extractor = HandwritingFeatures(temp_filename)
+        results = extractor.generate_professional_report()
         
-        return profile
+        logging.info(f"[OK] Analysis Complete.")
+        
+        # --- MODIFIED CSV SAVING LOGIC ---
+        # We explicitly list only the columns we want (A to I).
+        # This excludes Column J (Tremors) and all Categories (K onwards).
+        csv_columns = [
+            "Filename", 
+            "Loops", 
+            "Embellishments", 
+            "Diacritics", 
+            "Retouching", 
+            "Word_Spacing_px", 
+            "Spacing_Consistency", 
+            "T_Crossing", 
+            "Pen_Lifts"
+        ]
+        
+        csv_file = "analysis_results.csv"
+        try:
+            file_exists = os.path.isfile(csv_file)
+            with open(csv_file, 'a', newline='') as f:
+                writer = csv.writer(f)
+                
+                # Write Header if file is new
+                if not file_exists:
+                    writer.writerow(csv_columns)
+                
+                # Build the row data strictly based on our allowed columns
+                # 1. Filename
+                row_data = [file.filename]
+                # 2. The rest of the metrics from the 'results' dictionary
+                for col in csv_columns[1:]:
+                    row_data.append(results.get(col, 0))
+                
+                writer.writerow(row_data)
+                
+            logging.info(f"[SAVE] Saved to {csv_file}")
+        except PermissionError:
+            logging.warning(f"[WARN] CSV File Locked.")
+            
+        return {"filename": file.filename, "data": results}
+
     except Exception as e:
-        if conn: conn.close()
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
-
-@app.post("/analyze/json", response_model=PersonalityProfile)
-async def analyze_json_endpoint(metrics: HandwritingMetrics):
-    """
-    Directly upload the parameters (loops, slant, etc.) to get a prediction.
-    Useful if you have the data from elsewhere.
-    """
-    return apply_handwriting_rules(metrics)
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
+        logging.error(f"[!!] CRITICAL ERROR: {str(e)}")
+        return {"error": str(e)}
+    finally:
+        if os.path.exists(temp_filename): os.remove(temp_filename)
+        logging.info("[XX] Cleanup done.")

@@ -1,0 +1,52 @@
+2025-12-28 11:09:03,975 - INFO - Loaded image: temp_WhatsApp Image 2025-11-24 at 19.54.56_c7003e78.jpg
+2025-12-28 11:09:03,975 - INFO - Extracted 518 initial contours.
+2025-12-28 11:09:04,460 - INFO - Successfully analyzed WhatsApp Image 2025-11-24 at 19.54.56_c7003e78.jpg
+2025-12-28 11:32:42,114 - INFO - Analyzed WhatsApp Image 2025-11-24 at 19.54.56_c7003e78.jpg
+2025-12-28 11:33:10,755 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.26_c987fee1.jpg
+2025-12-28 11:36:50,233 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.23_677949ab.jpg
+2025-12-28 11:40:02,558 - INFO - Analyzed WhatsApp Image 2025-11-12 at 15.34.41_74185a3f.jpg
+2025-12-28 11:44:38,606 - INFO - Analyzed WhatsApp Image 2025-11-12 at 15.34.41_74185a3f.jpg
+2025-12-28 11:48:03,925 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.26_c987fee1.jpg
+2025-12-28 11:50:40,414 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.23_677949ab.jpg
+2025-12-28 13:18:49,945 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.23_677949ab.jpg - Success
+2025-12-28 14:14:11,494 - INFO - Analyzed WhatsApp Image 2025-11-12 at 15.34.41_627fb498.jpg - Success
+2025-12-28 15:47:44,345 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.23_cde93d35.jpg - Success
+2025-12-28 15:48:24,990 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.23_cde93d35.jpg - Success
+2025-12-28 15:52:40,429 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.23_cde93d35.jpg - Success
+2025-12-28 15:58:53,594 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.23_cde93d35.jpg - Success
+2025-12-28 16:04:13,017 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.23_cde93d35.jpg - Success
+2025-12-28 20:02:08,647 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.26_c987fee1.jpg - Success
+2025-12-28 20:05:52,367 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.26_c987fee1.jpg - Success
+2025-12-28 20:06:07,957 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.26_c987fee1.jpg - Success
+2025-12-28 20:06:23,096 - INFO - Analyzed WhatsApp Image 2025-11-12 at 15.34.41_627fb498.jpg - Success
+2025-12-28 20:06:42,512 - INFO - Analyzed WhatsApp Image 2025-11-12 at 15.34.41_627fb498.jpg - Success
+2025-12-28 20:06:56,036 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.23_677949ab.jpg - Success
+2025-12-28 20:09:18,740 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.26_c987fee1.jpg - Success
+2025-12-29 19:57:16,001 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.23_677949ab.jpg - Success
+2025-12-29 19:58:54,464 - INFO - Analyzed WhatsApp Image 2025-10-25 at 12.54.13_e26596cb.jpg - Success
+2025-12-29 20:07:55,778 - INFO - Analyzed WhatsApp Image 2025-11-12 at 15.34.41_627fb498.jpg - Success
+2025-12-29 20:07:55,868 - ERROR - Error processing WhatsApp Image 2025-11-12 at 15.34.41_627fb498.jpg: [Errno 13] Permission denied: 'analysis_results.csv'
+2025-12-29 20:11:21,686 - INFO - Analyzed WhatsApp Image 2025-11-12 at 15.34.41_74185a3f.jpg - Success
+2025-12-29 20:11:21,727 - ERROR - Error processing WhatsApp Image 2025-11-12 at 15.34.41_74185a3f.jpg: [Errno 13] Permission denied: 'analysis_results.csv'
+2025-12-29 20:11:41,238 - INFO - Analyzed WhatsApp Image 2025-10-25 at 12.54.13_e26596cb.jpg - Success
+2025-12-29 20:11:41,243 - ERROR - Error processing WhatsApp Image 2025-10-25 at 12.54.13_e26596cb.jpg: [Errno 13] Permission denied: 'analysis_results.csv'
+2025-12-29 20:13:20,155 - INFO - Analyzed WhatsApp Image 2025-10-25 at 12.54.13_e26596cb.jpg - Success
+2025-12-29 20:13:20,161 - ERROR - Error processing WhatsApp Image 2025-10-25 at 12.54.13_e26596cb.jpg: [Errno 13] Permission denied: 'analysis_results.csv'
+2025-12-29 20:21:17,005 - INFO - Analyzed WhatsApp Image 2025-11-12 at 15.34.41_74185a3f.jpg - Success
+2025-12-29 20:21:51,820 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.23_cde93d35.jpg - Success
+2025-12-29 20:22:06,779 - INFO - Analyzed WhatsApp Image 2025-10-05 at 16.37.05_2b226da0.jpg - Success
+2025-12-29 20:23:25,989 - INFO - Analyzed WhatsApp Image 2025-10-12 at 23.06.45_00396560.jpg - Success
+2025-12-29 20:23:54,955 - INFO - Analyzed WhatsApp Image 2025-11-14 at 17.31.52_03264cd5.jpg - Success
+2025-12-29 20:27:04,417 - INFO - Analyzed mirdula_handwriting .jpg - Success
+2025-12-29 20:27:20,861 - INFO - Analyzed WhatsApp Image 2025-10-05 at 16.37.05_2b226da0.jpg - Success
+2025-12-29 20:27:44,405 - INFO - Analyzed WhatsApp Image 2025-10-12 at 23.06.45_00396560.jpg - Success
+2025-12-29 20:27:56,359 - INFO - Analyzed WhatsApp Image 2025-11-12 at 15.34.41_74185a3f.jpg - Success
+2025-12-29 20:45:41,161 - INFO - Analyzed WhatsApp Image 2025-11-10 at 10.55.23_677949ab.jpg - Success
+2025-12-29 20:45:41,162 - ERROR - Error processing WhatsApp Image 2025-11-10 at 10.55.23_677949ab.jpg: [Errno 13] Permission denied: 'analysis_results.csv'
+2025-12-29 20:47:13,282 - INFO - Analyzed WhatsApp Image 2025-11-12 at 15.34.41_627fb498.jpg - Success
+2025-12-29 20:47:25,665 - INFO - Analyzed WhatsApp Image 2025-10-05 at 16.37.05_2b226da0.jpg - Success
+2025-12-31 14:47:51,265 - INFO - Analyzed 097 (1).png - Success
+2025-12-31 14:52:48,666 - INFO - Analyzed 097 (1).png - Success
+2025-12-31 14:53:58,800 - INFO - Analyzed 097 (1).png - Success
+2025-12-31 15:03:26,084 - INFO - Analyzed 097 (1).png - Success
+2025-12-31 15:14:56,152 - INFO - Analyzed 097 (1).png - Success
