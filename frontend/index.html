@@ -225,18 +225,17 @@
         }
         
         function displayResults(data) {
-            // 1. POPULATE BASIC METRICS GRID
             elements.metricsGrid.innerHTML = '';
             
-            // Logic to determine status badge
             const getStatus = (val, threshold, labelHigh, labelLow) => {
                 return val > threshold ? labelHigh : labelLow;
             };
 
             const metricDefs = [
                 { 
-                    key: 'Word_Spacing_Px', label: 'Word Spacing', unit: 'px', icon: '↔️',
-                    status: getStatus(data.Word_Spacing_Px, 60, "Wide", "Normal") 
+                    // UPDATED: Now points to the Normalized value
+                    key: 'Word_Spacing_Norm', label: 'Word Spacing', unit: '0.0-1.0', icon: '↔️',
+                    status: getStatus(data.Word_Spacing_Norm, 0.6, "Wide", "Normal") 
                 },
                 { 
                     key: 'T_Crossing_Count', label: 'T-Crossings', unit: 'count', icon: 't',
@@ -251,31 +250,34 @@
                     status: "i-dots / j-dots"
                 },
                 { 
-                    key: 'Pen_Lifts', label: 'Pen Lifts', unit: 'ratio', icon: '✒️',
-                    status: getStatus(data.Pen_Lifts, 2.0, "Disconnected", "Fluid")
+                    key: 'Pen_Lifts_Score', label: 'Pen Lifts', unit: 'ratio', icon: '✒️',
+                    status: getStatus(data.Pen_Lifts_Score, 0.5, "Disconnected", "Fluid")
                 },
                 { 
-                    key: 'Tremors', label: 'Tremor Index', unit: '0.0-1.0', icon: '〰️',
-                    status: getStatus(data.Tremors, 0.18, "Shaky", "Stable")
+                    key: 'Tremor_Index', label: 'Tremor Index', unit: '0.0-1.0', icon: '〰️',
+                    status: getStatus(data.Tremor_Index, 0.4, "Shaky", "Stable")
                 },
                 { 
-                    key: 'Embellishments', label: 'Embellish Idx', unit: '0.0-1.0', icon: '➰',
-                    status: getStatus(data.Embellishments, 0.7, "Decorated", "Simple")
+                    key: 'Embellishment_Index', label: 'Embellish Idx', unit: '0.0-1.0', icon: '➰',
+                    status: getStatus(data.Embellishment_Index, 0.5, "Decorated", "Simple")
                 },
                 { 
-                    key: 'Retouching', label: 'Retouching', unit: '0.0-1.0', icon: '✏️',
-                    status: getStatus(data.Retouching, 0.75, "Overwritten", "Clean")
+                    key: 'Retouching_Index', label: 'Retouching', unit: '0.0-1.0', icon: '✏️',
+                    status: getStatus(data.Retouching_Index, 0.5, "Overwritten", "Clean")
                 }
             ];
 
             metricDefs.forEach(def => {
-                const val = data[def.key] !== undefined ? data[def.key] : 0;
-                
-                // Badge Color Logic
+                // Default to 0.00 if undefined, formatted to 2 decimals
+                let val = data[def.key] !== undefined ? data[def.key] : 0;
+                if (typeof val === 'number' && !Number.isInteger(val)) {
+                    val = val.toFixed(2);
+                }
+
                 let badgeColor = "bg-gray-100 text-gray-500";
-                if (def.status === "Shaky" || def.status === "Overwritten") badgeColor = "bg-red-100 text-red-600";
+                if (def.status === "Shaky" || def.status === "Overwritten" || def.status === "Disconnected") badgeColor = "bg-red-100 text-red-600";
                 else if (def.status === "Fluid" || def.status === "Stable" || def.status === "Clean") badgeColor = "bg-green-100 text-green-700";
-                else if (def.status === "Wide" || def.status === "Looped") badgeColor = "bg-blue-100 text-blue-600";
+                else if (def.status === "Wide" || def.status === "Looped" || def.status === "Decorated") badgeColor = "bg-blue-100 text-blue-600";
 
                 const card = document.createElement('div');
                 card.className = 'metric-card bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center text-center';
@@ -303,7 +305,7 @@
                 { key: "Diacritic_Offset_Var", desc: "Consistency of Dot Placement" },
                 { key: "T_Bar_Height_Mean", desc: "Cross Height (0=Bottom, 1=Top)" },
                 { key: "T_Bar_Height_Var", desc: "Consistency of T-Bar Height" },
-                { key: "Word_Spacing_Norm", desc: "Spacing relative to line height" }
+                { key: "Word_Spacing_Score", desc: "Spacing Score (Normalized)" } 
             ];
 
             advancedMetrics.forEach(m => {

@@ -87,3 +87,126 @@
 12:11:25 | INFO     | --- [START] Processing: temp_100.png ---
 12:11:25 | INFO     |    > Avg Line Height (Px): 851.0
 12:11:25 | INFO     | Features Extracted Successfully.
+12:39:23 | INFO     | NEW REQUEST: 100.png
+12:39:23 | INFO     | --- [START] Processing: temp_100.png ---
+12:39:24 | INFO     |    > Avg Line Height (Px): 851.0
+12:39:24 | INFO     | Features Extracted Successfully.
+12:49:28 | INFO     | NEW REQUEST: 101.png
+12:49:28 | INFO     | --- [START] Processing: temp_101.png ---
+12:49:29 | INFO     |    > Avg Line Height (Px): 667.0
+12:49:29 | INFO     | Features Extracted Successfully.
+12:52:36 | INFO     | NEW REQUEST: 103.png
+12:52:36 | INFO     | --- [START] Processing: temp_103.png ---
+12:52:37 | INFO     |    > Avg Line Height (Px): 569.0
+12:52:37 | INFO     | Features Extracted Successfully.
+12:53:05 | INFO     | NEW REQUEST: 101.png
+12:53:05 | INFO     | --- [START] Processing: temp_101.png ---
+12:53:07 | INFO     |    > Avg Line Height (Px): 555.0
+12:53:07 | INFO     | Features Extracted Successfully.
+12:57:29 | INFO     | NEW REQUEST: 104.png
+12:57:29 | INFO     | --- [START] Processing: temp_104.png ---
+12:57:30 | INFO     |  > Line Height: 741.0
+12:57:30 | ERROR    | ERROR: 'HandwritingFeatures' object has no attribute 'width'
+12:59:02 | INFO     | NEW REQUEST: 104.png
+12:59:02 | INFO     | --- [START] Processing: temp_104.png ---
+12:59:03 | INFO     |  > Line Height: 741.0
+12:59:03 | INFO     | Features Extracted Successfully.
+13:02:03 | INFO     | NEW REQUEST: 104.png
+13:02:03 | INFO     | --- [START] Processing: temp_104.png ---
+13:02:04 | INFO     |  > Dim: 1000x1414 | LineH: 741.0 | StrokeW: 2.056774854660034
+13:02:04 | INFO     | Features Extracted Successfully.
+13:04:54 | INFO     | NEW REQUEST: 103.png
+13:04:54 | INFO     | --- [START] Processing: temp_103.png ---
+13:04:56 | INFO     | Features Extracted Successfully.
+15:28:15 | INFO     | NEW REQUEST: 103.png
+15:28:15 | INFO     | --- [START] Processing: temp_103.png ---
+15:28:18 | INFO     | Features Extracted Successfully.
+15:32:48 | INFO     | NEW REQUEST: 100.png
+15:32:48 | INFO     | --- [START] Processing: temp_100.png ---
+15:32:49 | INFO     | Features Extracted Successfully.
+16:45:07 | INFO     | NEW REQUEST: 100.png
+16:45:07 | INFO     | --- [START] Processing: temp_100.png ---
+16:45:08 | INFO     | Features Extracted Successfully.
+16:47:24 | INFO     | NEW REQUEST: WhatsApp Image 2025-11-12 at 15.34.41_74185a3f.jpg
+16:47:24 | INFO     | --- [START] Processing: temp_WhatsApp Image 2025-11-12 at 15.34.41_74185a3f.jpg ---
+16:47:25 | INFO     | Features Extracted Successfully.
+16:49:57 | INFO     | NEW REQUEST: 100.png
+16:49:57 | INFO     | --- [START] Processing: temp_100.png ---
+16:49:59 | INFO     | Features Extracted Successfully.
+12:20:15 | INFO     | NEW REQUEST: 101.png
+12:20:15 | INFO     | --- [START] Processing: temp_101.png ---
+12:20:17 | INFO     | Features Extracted Successfully.
+12:29:31 | INFO     | NEW REQUEST: 104.png
+12:29:31 | INFO     | --- [START] Processing: temp_104.png ---
+12:29:34 | INFO     | Analysis Complete. Word Spacing: 41 px
+13:05:57 | INFO     | NEW REQUEST: 103.png
+13:05:57 | INFO     | --- [START] Processing: temp_103.png ---
+13:05:59 | INFO     | Analysis Complete. Word Spacing: 26 px
+13:08:54 | INFO     | NEW REQUEST: 103.png
+13:08:54 | INFO     | --- [START] Processing: temp_103.png ---
+13:08:59 | INFO     | Analysis Complete. Word Spacing: 26 px
+13:13:12 | INFO     | NEW REQUEST: 103.png
+13:13:12 | INFO     | --- [START] Processing: temp_103.png ---
+13:13:15 | INFO     | Analysis Complete. Word Spacing: 26 px
+13:15:01 | INFO     | NEW REQUEST: WhatsApp Image 2025-11-10 at 10.55.23_677949ab.jpg
+13:15:01 | INFO     | --- [START] Processing: temp_WhatsApp Image 2025-11-10 at 10.55.23_677949ab.jpg ---
+13:15:02 | INFO     | Analysis Complete. Word Spacing: 81 px
+15:46:34 | INFO     | NEW REQUEST: 104.png
+15:46:34 | INFO     | --- [START] Processing: temp_104.png ---
+15:46:37 | INFO     | Analysis Complete. Word Spacing: 41 px
+15:50:57 | INFO     | NEW REQUEST: 099.png
+15:50:57 | INFO     | --- [START] Processing: temp_099.png ---
+15:50:58 | INFO     | Analysis Complete. Word Spacing: 166 px
+15:53:42 | INFO     | NEW REQUEST: 101.png
+15:53:42 | INFO     | --- [START] Processing: temp_101.png ---
+15:53:43 | INFO     | Analysis Complete. Word Spacing: 32 px
+16:07:14 | INFO     | NEW REQUEST: 101.png
+16:07:14 | INFO     | --- [START] Processing: temp_101.png ---
+16:07:16 | INFO     | Analysis Complete. Word Spacing: 32 px
+16:13:05 | INFO     | NEW REQUEST: 100.png
+16:13:05 | INFO     | --- [START] Processing: temp_100.png ---
+16:13:07 | INFO     | Analysis Complete. Word Spacing: 31 px
+16:16:52 | INFO     | NEW REQUEST: 104.png
+16:16:52 | INFO     | --- [START] Processing: temp_104.png ---
+16:16:54 | INFO     | DEBUG VALUES -> Tremor: 0.95, Embellish: 0.48, Retouch: 0.34
+16:16:54 | INFO     | Analysis Complete. WS: 41 px | Tremor: 0.95
+16:25:19 | INFO     | NEW REQUEST: 104.png
+16:25:19 | INFO     | --- [START] Processing: temp_104.png ---
+16:25:19 | INFO     | DEBUG VALUES -> Tremor: 0.95, Embellish: 0.48, Retouch: 0.34
+16:25:20 | INFO     | Analysis Complete. WS: 41 px | Tremor: 0.95
+16:36:15 | INFO     | NEW REQUEST: 103.png
+16:36:15 | INFO     | --- [START] Processing: temp_103.png ---
+16:36:17 | INFO     | DEBUG -> Tremor: 0.95, Embellish: 0.44, WS_Norm: 0.42
+16:36:17 | INFO     | Features Extracted Successfully.
+16:40:26 | INFO     | NEW REQUEST: 101.png
+16:40:26 | INFO     | --- [START] Processing: temp_101.png ---
+16:40:27 | INFO     | DEBUG -> LoopCnt: 154, Tremor: 0.95, Embellish: 0.54, WS_Norm: 0.47
+16:40:27 | INFO     | Analysis Complete.
+16:41:43 | INFO     | NEW REQUEST: 099.png
+16:41:43 | INFO     | --- [START] Processing: temp_099.png ---
+16:41:44 | INFO     | DEBUG -> LoopCnt: 124, Tremor: 0.95, Embellish: 0.43, WS_Norm: 0.95
+16:41:44 | INFO     | Analysis Complete.
+16:42:05 | INFO     | NEW REQUEST: 100.png
+16:42:05 | INFO     | --- [START] Processing: temp_100.png ---
+16:42:06 | INFO     | DEBUG -> LoopCnt: 144, Tremor: 0.95, Embellish: 0.6, WS_Norm: 0.46
+16:42:06 | INFO     | Analysis Complete.
+16:42:59 | INFO     | NEW REQUEST: 101.png
+16:42:59 | INFO     | --- [START] Processing: temp_101.png ---
+16:43:01 | INFO     | DEBUG -> LoopCnt: 154, Tremor: 0.95, Embellish: 0.54, WS_Norm: 0.47
+16:43:01 | INFO     | Analysis Complete.
+16:43:42 | INFO     | NEW REQUEST: 103.png
+16:43:42 | INFO     | --- [START] Processing: temp_103.png ---
+16:43:44 | INFO     | DEBUG -> LoopCnt: 135, Tremor: 0.95, Embellish: 0.44, WS_Norm: 0.42
+16:43:44 | INFO     | Analysis Complete.
+16:44:37 | INFO     | NEW REQUEST: 104.png
+16:44:37 | INFO     | --- [START] Processing: temp_104.png ---
+16:44:38 | INFO     | DEBUG -> LoopCnt: 285, Tremor: 0.95, Embellish: 0.48, WS_Norm: 0.56
+16:44:38 | INFO     | Analysis Complete.
+21:54:27 | INFO     | NEW REQUEST: 100.png
+21:54:27 | INFO     | --- [START] Processing: temp_100.png ---
+21:54:29 | INFO     | DEBUG -> LoopCnt: 144, Tremor: 0.95, Embellish: 0.6, WS_Norm: 0.46
+21:54:29 | INFO     | Analysis Complete.
+19:39:46 | INFO     | NEW REQUEST: 104.png
+19:39:46 | INFO     | --- [START] Processing: temp_104.png ---
+19:39:47 | INFO     | DEBUG -> LoopCnt: 285, Tremor: 0.95, Embellish: 0.48, WS_Norm: 0.56
+19:39:47 | INFO     | Analysis Complete.

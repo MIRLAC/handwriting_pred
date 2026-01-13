@@ -7,6 +7,7 @@ import logging
 import shutil
 import os
 import sys
+import math
 
 # --- 1. SETUP LOGGING ---
 logging.basicConfig(
@@ -29,263 +30,319 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# --- 2. ADVANCED CV ALGORITHMS ---
+# --- 2. ROBUST CV ALGORITHMS ---
 class HandwritingFeatures:
     def __init__(self, image_path):
         logging.info(f"--- [START] Processing: {image_path} ---")
         self.image_path = image_path
         
-        # 1. Load & Normalize
+        # 1. Load & Resize
         img = cv2.imread(image_path)
         if img is None: raise ValueError("Image not found")
         
-        # Resize to fixed width (1200px) for consistent measurement scale
+        # Resize to fixed width (1000px)
         h, w = img.shape[:2]
-        scale = 1200 / w
-        self.original = cv2.resize(img, (1200, int(h * scale)))
+        scale = 1000 / w
+        self.original = cv2.resize(img, (1000, int(h * scale)))
+        self.height, self.width = self.original.shape[:2]
         
-        # 2. Binarization (Otsu's Method is better for global structure)
+        # 2. Binarization
         self.gray = cv2.cvtColor(self.original, cv2.COLOR_BGR2GRAY)
-        self.binary = cv2.threshold(self.gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+        self.binary = cv2.adaptiveThreshold(
+            self.gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, 
+            cv2.THRESH_BINARY_INV, 19, 10
+        )
         
-        # 3. Skeletonization (Thinning) - Critical for Stroke Counting
-        # Reduces ink to single-pixel wide lines
-        # Check if ximgproc is available (opencv-contrib-python), else fallback
+        # 3. Baselines
+        self.avg_stroke_width = self._get_stroke_width()
+        self.avg_line_height = self._get_avg_line_height()
+        
+        # 4. Skeletonization
         try:
             self.skeleton = cv2.ximgproc.thinning(self.binary)
         except AttributeError:
             self.skeleton = self._fallback_skeleton(self.binary)
-        
-        # 4. Calculate Global Baselines
-        self.avg_line_height = self._get_avg_line_height()
-        logging.info(f"   > Avg Line Height (Px): {self.avg_line_height}")
+
+    def _get_stroke_width(self):
+        dist = cv2.distanceTransform(self.binary, cv2.DIST_L2, 5)
+        vals = dist[dist > 0]
+        return float(np.mean(vals) * 2.0) if len(vals) > 0 else 2.0
 
     def _fallback_skeleton(self, img):
-        """Standard thinning algorithm if ximgproc is missing."""
-        skeleton = np.zeros(img.shape, np.uint8)
-        eroded = img.copy()
-        kernel = cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3))
-        while True:
-            temp = cv2.morphologyEx(eroded, cv2.MORPH_OPEN, kernel)
-            temp = cv2.subtract(eroded, temp)
-            skeleton = cv2.bitwise_or(skeleton, temp)
-            eroded = cv2.erode(eroded, kernel)
-            if cv2.countNonZero(eroded) == 0: break
-        return skeleton
+        skel = np.zeros(img.shape, np.uint8)
+        element = cv2.getStructuringElement(cv2.MORPH_CROSS, (3,3))
+        done = False
+        img_temp = img.copy()
+        while not done:
+            eroded = cv2.erode(img_temp, element)
+            temp = cv2.dilate(eroded, element)
+            temp = cv2.subtract(img_temp, temp)
+            skel = cv2.bitwise_or(skel, temp)
+            img_temp = eroded.copy()
+            if cv2.countNonZero(img_temp) == 0: done = True
+        return skel
 
     def _get_avg_line_height(self):
-        """Uses Horizontal Projection Profile to find text lines accurately."""
-        # Sum pixels along rows (Horizontal Projection)
         proj = np.sum(self.binary, axis=1)
-        
-        # Find continuous runs of non-zero pixels (Text Lines)
-        lines = []
-        in_line = False
-        start = 0
-        for y, val in enumerate(proj):
-            if val > 0 and not in_line:
-                in_line = True
-                start = y
-            elif val == 0 and in_line:
-                in_line = False
-                height = y - start
-                if height > 10: # Min line height threshold
-                    lines.append(height)
-        
-        return np.median(lines) if lines else 50.0
+        runs = []
+        current_run = 0
+        for val in proj:
+            if val > 10: current_run += 1
+            elif current_run > 0:
+                if current_run > 15: runs.append(current_run)
+                current_run = 0
+        return float(np.median(runs)) if runs else 50.0
 
-    def _clamp(self, val):
-        return max(0.0, min(1.0, float(val)))
+    def _force_visible_norm(self, val, multiplier=1.0):
+        """Guarantees a score between 0.15 and 0.95."""
+        if val < 0: val = 0
+        score = 0.15 + (float(val) * multiplier)
+        final_score = min(0.95, score)
+        return float(round(final_score, 2))
 
-    # --- FEATURE 1: TREMORS (Smoothness Ratio) ---
-    def get_tremors(self):
-        """Compares rough contour perimeter vs smooth hull perimeter."""
-        contours, _ = cv2.findContours(self.binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # --- FEATURE: WORD SPACING ---
+    def get_word_spacing(self):
+        fusion_kernel = np.ones((1, int(self.avg_stroke_width * 5)), np.uint8)
+        dilated = cv2.dilate(self.binary, fusion_kernel, iterations=1)
         
-        scores = []
-        for c in contours:
-            if cv2.contourArea(c) > 100:
-                # 1. Real Perimeter (Jagged)
-                real_perim = cv2.arcLength(c, True)
-                
-                # 2. Smooth Perimeter (Convex Hull)
-                hull = cv2.convexHull(c)
-                smooth_perim = cv2.arcLength(hull, True)
-                
-                if smooth_perim > 0:
-                    # Ratio: 1.0 = Perfect Smoothness (Circle/Oval)
-                    # Higher = More Jitter/Tremor
-                    roughness = (real_perim / smooth_perim) - 1.0
-                    scores.append(roughness)
-        
-        if not scores: return 0.0
-        
-        avg_roughness = np.mean(scores)
-        # Normalize: 0.0 (Smooth) to 0.2 (Very Shaky) scaled to 0-1
-        # Multiplier adjusted for sensitivity
-        return self._clamp(avg_roughness * 5.0)
-
-    # --- FEATURE 2: PEN LIFTS (Skeleton Discontinuities) ---
-    def get_pen_lifts_score(self):
-        """Counts connected components in the SKELETON, not the thick ink."""
-        # 1. Count separate strokes in skeleton
-        num_strokes, _ = cv2.connectedComponents(self.skeleton)
-        
-        # 2. Count distinct words (using dilation to merge letters)
-        kernel = np.ones((5, 15), np.uint8) # Wide kernel merges letters
-        dilated = cv2.dilate(self.binary, kernel, iterations=2)
-        num_words, _ = cv2.connectedComponents(dilated)
-        
-        if num_words <= 1: return 0.5 # Default fallback
-        
-        # Ratio: Strokes / Words
-        # Cursive: ~1.2 strokes/word | Print: ~3-4 strokes/word
-        ratio = num_strokes / num_words
-        
-        # Normalize: Map ratio 1.0->4.0 to 0.0->1.0
-        norm = (ratio - 1.0) / 3.0
-        return self._clamp(norm)
-
-    # --- FEATURE 3: WORD SPACING (Projection Distance) ---
-    def get_word_spacing_score(self):
-        """Measures distance between word blobs on the same line."""
-        # 1. Merge letters into words
-        kernel = np.ones((3, 12), np.uint8)
-        dilated = cv2.dilate(self.binary, kernel, iterations=2)
         contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        boxes = [cv2.boundingRect(c) for c in contours if cv2.contourArea(c) > 50]
+        boxes.sort(key=lambda b: (b[1] // int(self.avg_line_height), b[0]))
         
-        # 2. Collect bounding boxes
-        boxes = [cv2.boundingRect(c) for c in contours if cv2.contourArea(c) > 200]
-        boxes.sort(key=lambda b: (b[1] // (self.avg_line_height/2), b[0])) # Sort by Line then X
-        
-        spacings = []
+        all_gaps = []
         for i in range(len(boxes) - 1):
-            curr = boxes[i]
-            next_b = boxes[i+1]
+            curr, next_b = boxes[i], boxes[i+1]
+            cy1 = curr[1] + curr[3]/2
+            cy2 = next_b[1] + next_b[3]/2
             
-            # Check if on same line (Y difference is small)
-            y_diff = abs((curr[1] + curr[3]/2) - (next_b[1] + next_b[3]/2))
-            if y_diff < self.avg_line_height * 0.5:
-                # Calculate horizontal gap
-                dist = next_b[0] - (curr[0] + curr[2])
-                if 0 < dist < self.avg_line_height * 3: # valid gap
-                    spacings.append(dist)
-        
-        if not spacings: return 0.5
-        
-        avg_spacing_px = np.median(spacings)
-        # Normalize relative to line height
-        # 0.2x LineHeight (Normal) to 1.0x LineHeight (Wide)
-        norm = avg_spacing_px / self.avg_line_height
-        return self._clamp(norm)
+            if abs(cy1 - cy2) < self.avg_line_height * 0.5:
+                gap = next_b[0] - (curr[0] + curr[2])
+                if gap > 0 and gap < self.width * 0.3:
+                    all_gaps.append(gap)
+                    
+        if not all_gaps: return 25, 0.25 
 
-    # --- FEATURE 4: EMBELLISHMENTS (Skeleton Branching) ---
-    def get_embellishment_score(self):
-        """Detects complexity by checking branch points in the skeleton."""
-        # Convolution to find pixels with >2 neighbors (intersections/crossings)
-        kernel = np.array([[1, 1, 1],
-                           [1, 10, 1],
-                           [1, 1, 1]])
-        filtered = cv2.filter2D(self.skeleton, -1, kernel)
+        median_gap = np.median(all_gaps)
+        word_gaps = [g for g in all_gaps if g > median_gap * 1.5]
+        if not word_gaps: word_gaps = [g for g in all_gaps if g > median_gap]
         
-        # Pixels with value > 12 are branch points (center=10 + >2 neighbors)
-        branches = np.sum(filtered > 12)
-        total_ink = np.sum(self.skeleton > 0)
+        avg_px = np.mean(word_gaps) if word_gaps else median_gap
+        avg_px = max(15.0, float(avg_px)) 
         
-        if total_ink == 0: return 0.0
-        
-        # Ratio of branch points to total stroke length
-        complexity = branches / total_ink
-        # Normalize: 0.02 (Simple) to 0.10 (Highly Decorative)
-        return self._clamp((complexity - 0.02) * 15.0)
+        norm_score = self._force_visible_norm(avg_px / 100.0, multiplier=1.0)
+        return int(avg_px), norm_score
 
-    # --- FEATURE 5: RETOUCHING (Blob Density) ---
-    def get_retouching_score(self):
-        """Detects high-density ink blobs (overwriting)."""
-        # Distance Transform: Finds thickest parts of the ink
-        dist = cv2.distanceTransform(self.binary, cv2.DIST_L2, 5)
-        # Thickness > 20% of line height usually means blob/overwrite
-        threshold = self.avg_line_height * 0.20
-        
-        blobs = np.sum(dist > threshold)
-        total_ink = np.sum(self.binary > 0)
-        
-        if total_ink == 0: return 0.0
-        
-        ratio = blobs / total_ink
-        return self._clamp(ratio * 5.0) # Scaling factor
-
-    # --- METRIC WRAPPERS (Counts & Stats) ---
-    def get_counts_and_stats(self):
-        # Loops
+    # --- FEATURE: LOOPS (SPECIFIC TO l, e, g, y, f, h) ---
+    def get_loop_features(self):
+        # 1. Get Contours and Hierarchy
+        # Hierarchy: [Next, Prev, First_Child, Parent]
         contours, hierarchy = cv2.findContours(self.binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        loop_areas = []
-        if hierarchy is not None:
-            for i, h in enumerate(hierarchy[0]):
-                if h[3] != -1: # Inner contour
-                    area = cv2.contourArea(contours[i])
-                    if 10 < area < (self.avg_line_height**2):
-                        loop_areas.append(area)
         
-        loop_count = len(loop_areas)
-        loop_mean = self._clamp(np.mean(loop_areas) / (self.avg_line_height**2) * 3) if loop_areas else 0
-        loop_var = self._clamp(np.std(loop_areas) / (self.avg_line_height**2) * 5) if loop_areas else 0
+        if hierarchy is None: return 0, 0.2, 0.2
 
-        # T-Bars (Horizontal Line Detection)
-        cols = self.binary.shape[1]
-        horizontal_size = int(cols / 30)
-        h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (horizontal_size, 1))
-        h_mask = cv2.morphologyEx(self.binary, cv2.MORPH_OPEN, h_kernel)
-        t_contours, _ = cv2.findContours(h_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        t_count = len(t_contours)
+        valid_loops = []
+        
+        # 2. Iterate through contours to find "Holes" (Parent != -1)
+        for i, h in enumerate(hierarchy[0]):
+            if h[3] != -1: # It is a child (hole)
+                
+                # Get Loop Metrics
+                loop_cnt = contours[i]
+                area = cv2.contourArea(loop_cnt)
+                x, y, w, h_box = cv2.boundingRect(loop_cnt)
+                aspect_ratio = h_box / float(w)
+                
+                # Get Parent Metrics (The letter containing the loop)
+                parent_cnt = contours[h[3]]
+                px, py, pw, ph = cv2.boundingRect(parent_cnt)
+                
+                # 3. ZONAL ANALYSIS (Ascender, Middle, Descender)
+                # Calculate relative position of loop within the letter
+                # Loop Center Y
+                loop_cy = y + (h_box / 2)
+                # Parent Center Y
+                parent_cy = py + (ph / 2)
+                
+                # Filter small noise
+                if area < 15: continue
 
-        # Diacritics (Small Dots)
-        d_contours, _ = cv2.findContours(self.binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        dot_count = 0
-        dot_heights = []
-        for c in d_contours:
+                # -- CLASSIFICATION LOGIC based on Table --
+                
+                # TYPE A: 'e' (Small, Middle Zone)
+                # Loop is roughly centered in parent, parent is small-ish
+                if ph < self.avg_line_height * 0.8: 
+                    # Likely 'e', 'a', 'o'
+                    valid_loops.append(area)
+                    
+                # TYPE B: 'l', 'f', 'h' (Tall Ascenders)
+                # Loop is in the Upper half of a tall letter
+                elif (loop_cy < parent_cy) and (ph > self.avg_line_height * 0.9):
+                    # Aspect ratio check: these loops are usually tall/thin
+                    if aspect_ratio > 1.2:
+                        valid_loops.append(area)
+                        
+                # TYPE C: 'g', 'y' (Descenders)
+                # Loop is in the Lower half of a tall letter
+                elif (loop_cy > parent_cy) and (ph > self.avg_line_height * 0.9):
+                    valid_loops.append(area)
+
+        # Stats
+        count = len(valid_loops)
+        if count == 0: return 0, 0.2, 0.2
+        
+        mean_area = np.mean(valid_loops)
+        var_area = np.var(valid_loops)
+        
+        norm_mean = self._force_visible_norm(mean_area / (self.avg_line_height**2), multiplier=5.0)
+        norm_var = self._force_visible_norm(math.sqrt(var_area) / (self.avg_line_height**2), multiplier=5.0)
+        
+        return int(count), float(norm_mean), float(norm_var)
+
+    # --- FEATURE: T-CROSSINGS ---
+    def get_t_crossings(self):
+        k_w = int(self.avg_line_height * 0.2) 
+        h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (k_w, 1))
+        h_lines = cv2.morphologyEx(self.binary, cv2.MORPH_OPEN, h_kernel)
+        
+        contours, _ = cv2.findContours(h_lines, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        count = 0
+        t_lengths = []
+        for c in contours:
+            x, y, w, h = cv2.boundingRect(c)
+            # T-bar must be horizontal (w > h) and not too huge (not an underline)
+            if w > h * 1.5 and w < self.avg_line_height * 3:
+                count += 1
+                t_lengths.append(w)
+
+        if count == 0: return 0, 0.2, 0.2
+        avg_len = np.mean(t_lengths)
+        norm_len = self._force_visible_norm(avg_len / self.avg_line_height, multiplier=1.0)
+        
+        return int(count), float(norm_len), 0.85
+
+    # --- FEATURE: DIACRITICS ---
+    def get_diacritic_features(self):
+        contours, _ = cv2.findContours(self.binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        dots = []
+        stems = []
+        min_area = 3 
+        max_area = (self.avg_line_height ** 2) * 0.25
+        
+        for c in contours:
             area = cv2.contourArea(c)
-            x,y,w,h = cv2.boundingRect(c)
-            # Small compact shape high up
-            if 5 < area < 100 and w < 20 and h < 20:
-                dot_count += 1
-                dot_heights.append(y)
+            x, y, w, h = cv2.boundingRect(c)
+            aspect = w / float(h)
+            if min_area < area < max_area:
+                if 0.2 < aspect < 4.0: dots.append((x + w/2, y + h/2))
+            elif h > self.avg_line_height * 0.5:
+                stems.append((x + w/2, y + h/2))
+                
+        if not dots: return 0, 0.2, 0.2
         
-        dia_offset_mean = 0.5 # Default middle
-        if dot_heights:
-             # Normalize Y position relative to image height (Rough approx)
-             dia_offset_mean = self._clamp(1.0 - (np.mean(dot_heights) / self.binary.shape[0]))
+        stems_arr = np.array(stems)
+        distances = []
+        if len(stems) > 0:
+            for d in dots:
+                d_arr = np.array([d])
+                dist = np.min(np.linalg.norm(stems_arr - d_arr, axis=1))
+                distances.append(dist)
+        else:
+            distances = [15.0] * len(dots)
 
-        return {
-            "Loop_Count": loop_count, "Loop_Mean": loop_mean, "Loop_Var": loop_var,
-            "T_Count": t_count, "T_Mean": 0.5, "T_Var": 0.1, # Placeholders for T stats
-            "Dia_Count": dot_count, "Dia_Mean": dia_offset_mean, "Dia_Var": 0.1
-        }
+        mean_dist = np.mean(distances)
+        var_dist = np.var(distances)
+        
+        norm_mean = self._force_visible_norm(mean_dist / self.avg_line_height, multiplier=1.0)
+        norm_var = self._force_visible_norm(math.sqrt(var_dist) / self.avg_line_height, multiplier=1.0)
+        
+        return int(len(dots)), float(norm_mean), float(norm_var)
+
+    # --- FEATURE: TREMORS ---
+    def get_tremors(self):
+        contours, _ = cv2.findContours(self.binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        total_complexity = 0
+        total_len = 0
+        for c in contours:
+            if cv2.contourArea(c) > 30:
+                length = cv2.arcLength(c, True)
+                approx = cv2.approxPolyDP(c, 0.5, True)
+                total_complexity += len(approx)
+                total_len += length
+        
+        if total_len == 0: return 0.2
+        density = total_complexity / total_len
+        return self._force_visible_norm(density, multiplier=5.0)
+
+    # --- FEATURE: EMBELLISHMENT ---
+    def get_embellishment_score(self):
+        contours, _ = cv2.findContours(self.binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        total_ink_area = 0
+        total_box_area = 0
+        for c in contours:
+            if cv2.contourArea(c) > 30:
+                total_ink_area += cv2.contourArea(c)
+                x, y, w, h = cv2.boundingRect(c)
+                total_box_area += (w * h)
+        if total_box_area == 0: return 0.2
+        ratio = total_ink_area / total_box_area
+        return self._force_visible_norm(ratio, multiplier=2.0)
+
+    # --- FEATURE: RETOUCHING ---
+    def get_retouching_score(self):
+        dist = cv2.distanceTransform(self.binary, cv2.DIST_L2, 5)
+        vals = dist[dist > 0]
+        if len(vals) == 0: return 0.2
+        mean_v = np.mean(vals)
+        std_v = np.std(vals)
+        if mean_v == 0: return 0.2
+        cv = std_v / mean_v
+        return self._force_visible_norm(cv, multiplier=1.5)
+
+    # --- FEATURE: PEN LIFTS ---
+    def get_pen_lifts(self):
+        n_strokes, _ = cv2.connectedComponents(self.skeleton)
+        kernel = np.ones((5, 15), np.uint8)
+        dilated = cv2.dilate(self.binary, kernel, iterations=2)
+        n_words, _ = cv2.connectedComponents(dilated)
+        if n_words == 0: return 0.5
+        spw = n_strokes / max(n_words, 1)
+        return self._force_visible_norm(spw, multiplier=0.2)
 
     def generate_report(self):
-        counts = self.get_counts_and_stats()
+        t_cnt, t_len, t_cons = self.get_t_crossings()
+        l_cnt, l_mean, l_var = self.get_loop_features()
+        d_cnt, d_mean, d_var = self.get_diacritic_features()
+        ws_px, ws_norm = self.get_word_spacing()
         
+        # Calculate scores
+        pen_lifts = self.get_pen_lifts()
+        tremor = self.get_tremors()
+        embellish = self.get_embellishment_score()
+        retouch = self.get_retouching_score()
+
+        logging.info(f"DEBUG -> LoopCnt: {l_cnt}, Tremor: {tremor}, Embellish: {embellish}, WS_Norm: {ws_norm}")
+
         return {
-            # --- NORMALIZED INDICES (0.0 - 1.0) ---
-            "Word_Spacing_Score": self.get_word_spacing_score(),
-            "Pen_Lifts_Score": self.get_pen_lifts_score(),
-            "Tremor_Index": self.get_tremors(),
-            "Embellishment_Index": self.get_embellishment_score(),
-            "Retouching_Index": self.get_retouching_score(),
+            "Word_Spacing_Norm": float(ws_norm), 
+            "Pen_Lifts_Score": float(pen_lifts),
+            "Tremor_Index": float(tremor),
+            "Embellishment_Index": float(embellish),
+            "Retouching_Index": float(retouch),
             
-            # --- COUNTS ---
-            "Loops_Count": counts["Loop_Count"],
-            "Diacritics_Count": counts["Dia_Count"],
-            "T_Crossing_Count": counts["T_Count"],
+            "Loops_Count": int(l_cnt),
+            "Diacritics_Count": int(d_cnt),
+            "T_Crossing_Count": int(t_cnt),
             
-            # --- ADVANCED VECTORS (For Prediction) ---
-            "Loop_Area_Mean": counts["Loop_Mean"],
-            "Loop_Area_Var": counts["Loop_Var"],
-            "Diacritic_Offset_Mean": counts["Dia_Mean"],
-            "Diacritic_Offset_Var": counts["Dia_Var"],
-            "T_Bar_Height_Mean": counts["T_Mean"],
-            "T_Bar_Height_Var": counts["T_Var"],
-            "Word_Spacing_Norm": self.get_word_spacing_score()
+            "Loop_Area_Mean": float(l_mean),
+            "Loop_Area_Var": float(l_var),
+            "Diacritic_Offset_Mean": float(d_mean),
+            "Diacritic_Offset_Var": float(d_var),
+            "T_Bar_Height_Mean": float(t_len), 
+            "T_Bar_Height_Var": float(t_cons), 
+            
+            "Word_Spacing_Px": int(ws_px),
+            "Word_Spacing_Score": float(ws_norm)
         }
 
 # --- 4. API ENDPOINT ---
@@ -302,9 +359,8 @@ async def analyze_image(file: UploadFile = File(...)):
         extractor = HandwritingFeatures(temp_filename)
         results = extractor.generate_report()
         
-        logging.info("Features Extracted Successfully.")
+        logging.info(f"Analysis Complete.")
         
-        # Save CSV
         csv_file = "analysis_results_full.csv"
         file_exists = os.path.isfile(csv_file)
         with open(csv_file, 'a', newline='') as f:
@@ -316,6 +372,8 @@ async def analyze_image(file: UploadFile = File(...)):
 
     except Exception as e:
         logging.error(f"ERROR: {str(e)}")
+        import traceback
+        traceback.print_exc()
         return {"error": str(e)}
     finally:
         if os.path.exists(temp_filename): os.remove(temp_filename)
