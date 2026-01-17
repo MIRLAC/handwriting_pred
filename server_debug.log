@@ -210,3 +210,171 @@
 19:39:46 | INFO     | --- [START] Processing: temp_104.png ---
 19:39:47 | INFO     | DEBUG -> LoopCnt: 285, Tremor: 0.95, Embellish: 0.48, WS_Norm: 0.56
 19:39:47 | INFO     | Analysis Complete.
+21:37:56 | INFO     | NEW REQUEST: 099.png
+21:37:56 | INFO     | --- [START] Processing: temp_099.png ---
+21:37:58 | INFO     | DEBUG -> LoopCnt: 124, Tremor: 0.95, Embellish: 0.43, WS_Norm: 0.95, T-Count: 0
+21:37:58 | INFO     | Analysis Complete.
+21:38:23 | INFO     | NEW REQUEST: 100.png
+21:38:23 | INFO     | --- [START] Processing: temp_100.png ---
+21:38:25 | INFO     | DEBUG -> LoopCnt: 144, Tremor: 0.95, Embellish: 0.6, WS_Norm: 0.46, T-Count: 0
+21:38:25 | INFO     | Analysis Complete.
+21:44:57 | INFO     | NEW REQUEST: 103.png
+21:44:57 | INFO     | --- [START] Processing: temp_103.png ---
+21:44:59 | INFO     | DEBUG -> LoopCnt: 135, Tremor: 0.95, Embellish: 0.44, WS_Norm: 0.42, T-Count: 0
+21:44:59 | INFO     | Analysis Complete.
+21:47:23 | INFO     | NEW REQUEST: 098.png
+21:47:23 | INFO     | --- [START] Processing: temp_098.png ---
+21:47:24 | INFO     | DEBUG -> LoopCnt: 202, Tremor: 0.95, Embellish: 0.49, WS_Norm: 0.82
+21:47:24 | INFO     | Analysis Complete.
+21:51:15 | INFO     | NEW REQUEST: 104.png
+21:51:15 | INFO     | --- [START] Processing: temp_104.png ---
+21:51:16 | INFO     | DEBUG -> LoopCnt: 285, Tremor: 0.95, T-Count: 0, WS_Norm: 0.56
+21:51:16 | INFO     | Analysis Complete.
+22:11:20 | INFO     | NEW REQUEST: 101.png
+22:11:20 | INFO     | --- [START] Processing: temp_101.png ---
+22:11:21 | INFO     | DEBUG -> T-Count: 0, LoopCnt: 156, Tremor: 0.95
+22:11:21 | INFO     | Analysis Complete.
+22:14:14 | INFO     | NEW REQUEST: 103.png
+22:14:14 | INFO     | --- [START] Processing: temp_103.png ---
+22:14:15 | INFO     | DEBUG -> LoopCnt: 147, Tremor: 0.95, Embellish: 0.44, WS_Norm: 0.42
+22:14:15 | INFO     | Analysis Complete.
+22:17:07 | INFO     | NEW REQUEST: 101.png
+22:17:07 | INFO     | --- [START] Processing: temp_101.png ---
+22:17:10 | INFO     | DEBUG -> T-Count: 9063, LoopCnt: 164, Tremor: 0.95, WS_Norm: 0.47
+22:17:10 | INFO     | Analysis Complete.
+11:15:05 | INFO     | NEW REQUEST: 100.png
+11:15:05 | INFO     | --- [START] Processing: temp_100.png ---
+11:15:08 | INFO     | DEBUG -> T-Count: 4850, LoopCnt: 166, Tremor: 0.95, WS_Norm: 0.46
+11:15:08 | INFO     | Analysis Complete.
+12:53:54 | INFO     | NEW REQUEST: 104.png
+12:53:54 | INFO     | --- [START] Processing: temp_104.png ---
+12:53:56 | INFO     | DEBUG -> T-Count: 1, LoopCnt: 366, Dots: 188
+12:53:56 | INFO     | Analysis Complete.
+12:56:36 | INFO     | NEW REQUEST: 104.png
+12:56:36 | INFO     | --- [START] Processing: temp_104.png ---
+12:56:38 | INFO     | DEBUG -> T-Count: 1, Dots: 188, Tremor: 0.95
+12:56:38 | INFO     | Analysis Complete.
+12:59:38 | INFO     | NEW REQUEST: 104.png
+12:59:38 | INFO     | --- [START] Processing: temp_104.png ---
+12:59:40 | INFO     | DEBUG -> T-Count: 0, LoopCnt: 366, Tremor: 0.95, WS_Norm: 0.56
+12:59:40 | INFO     | Analysis Complete.
+13:02:40 | INFO     | NEW REQUEST: 104.png
+13:02:40 | INFO     | --- [START] Processing: temp_104.png ---
+13:02:42 | INFO     | DEBUG -> T-Count: 1, Dots: 188, Tremor: 0.95
+13:02:42 | INFO     | Analysis Complete.
+13:14:08 | INFO     | NEW REQUEST: 104.png
+13:14:08 | INFO     | --- [START] Processing: temp_104.png ---
+13:14:09 | INFO     | DEBUG -> T-Count: 1, Dots: 100, Tremor: 0.95
+13:14:09 | INFO     | Analysis Complete.
+13:18:13 | INFO     | NEW REQUEST: 104.png
+13:18:13 | INFO     | --- [START] Processing: temp_104.png ---
+13:18:15 | INFO     | DEBUG -> T-Count: 1, Dots: 100, Tremor: 0.95
+13:18:15 | INFO     | Analysis Complete.
+13:21:26 | INFO     | NEW REQUEST: 103.png
+13:21:26 | INFO     | --- [START] Processing: temp_103.png ---
+13:21:28 | INFO     | DEBUG -> T-Count: 1, LoopCnt: 0, Dots: 10
+13:21:28 | INFO     | Analysis Complete.
+13:26:43 | INFO     | NEW REQUEST: 104.png
+13:26:43 | INFO     | --- [START] Processing: temp_104.png ---
+13:26:44 | INFO     | DEBUG -> T-Count: 0, LoopCnt: 320, Dots: 50
+13:26:44 | INFO     | Analysis Complete.
+13:45:05 | INFO     | NEW REQUEST: 104.png
+13:45:05 | INFO     | --- [START] Processing: temp_104.png ---
+13:45:07 | INFO     | DEBUG -> T-Count: 4, LoopCnt: 287, Dots: 200
+13:45:07 | INFO     | Analysis Complete.
+14:28:52 | INFO     | NEW REQUEST: 104.png
+14:28:52 | INFO     | --- [START] Processing: temp_104.png ---
+14:28:53 | INFO     | Detected Char Height: 28.0 px
+14:28:53 | INFO     | DEBUG -> LoopCnt: 18, T-Count: 38, Dots: 110
+14:28:53 | INFO     | Analysis Complete.
+14:33:06 | INFO     | NEW REQUEST: 104.png
+14:33:06 | INFO     | --- [START] Processing: temp_104.png ---
+14:33:07 | INFO     | DEBUG -> LoopCnt: 316, T-Count: 58, Dots: 45
+14:33:07 | INFO     | Analysis Complete.
+14:40:26 | INFO     | NEW REQUEST: 104.png
+14:40:26 | INFO     | --- [START] Processing: temp_104.png ---
+14:40:27 | INFO     | DEBUG -> LoopCnt: 231, T-Count: 58, Dots: 45
+14:40:27 | INFO     | Analysis Complete.
+14:49:31 | INFO     | NEW REQUEST: 104.png
+14:49:31 | INFO     | --- [START] Processing: temp_104.png ---
+14:49:32 | INFO     | DEBUG -> LoopCnt: 201, T-Count: 7, Dots: 45
+14:49:32 | INFO     | Analysis Complete.
+15:15:59 | INFO     | NEW REQUEST: 104.png
+15:15:59 | INFO     | --- [START] Processing: temp_104.png ---
+15:16:00 | INFO     | DEBUG -> LoopCnt: 201, T-Count: 7, Dots: 45
+15:16:00 | INFO     | Analysis Complete.
+15:22:43 | INFO     | NEW REQUEST: 104.png
+15:22:43 | INFO     | --- [START] Processing: temp_104.png ---
+15:22:44 | INFO     | DEBUG -> LoopCnt: 169, T-Count: 7, Dots: 45
+15:22:44 | INFO     | Analysis Complete.
+15:23:03 | INFO     | NEW REQUEST: 103.png
+15:23:03 | INFO     | --- [START] Processing: temp_103.png ---
+15:23:03 | INFO     | DEBUG -> LoopCnt: 89, T-Count: 6, Dots: 91
+15:23:03 | INFO     | Analysis Complete.
+15:23:17 | INFO     | NEW REQUEST: 101.png
+15:23:17 | INFO     | --- [START] Processing: temp_101.png ---
+15:23:18 | INFO     | DEBUG -> LoopCnt: 126, T-Count: 24, Dots: 147
+15:23:18 | INFO     | Analysis Complete.
+15:23:42 | INFO     | NEW REQUEST: 100.png
+15:23:42 | INFO     | --- [START] Processing: temp_100.png ---
+15:23:43 | INFO     | DEBUG -> LoopCnt: 93, T-Count: 60, Dots: 73
+15:23:43 | INFO     | Analysis Complete.
+15:23:57 | INFO     | NEW REQUEST: 099.png
+15:23:57 | INFO     | --- [START] Processing: temp_099.png ---
+15:23:58 | INFO     | DEBUG -> LoopCnt: 96, T-Count: 41, Dots: 31
+15:23:58 | INFO     | Analysis Complete.
+15:24:09 | INFO     | NEW REQUEST: 098.png
+15:24:09 | INFO     | --- [START] Processing: temp_098.png ---
+15:24:10 | INFO     | DEBUG -> LoopCnt: 171, T-Count: 13, Dots: 21
+15:24:10 | INFO     | Analysis Complete.
+15:26:47 | INFO     | NEW REQUEST: 097 (1).png
+15:26:47 | INFO     | --- [START] Processing: temp_097 (1).png ---
+15:26:47 | INFO     | DEBUG -> LoopCnt: 85, T-Count: 1, Dots: 171
+15:26:47 | INFO     | Analysis Complete.
+15:27:03 | INFO     | NEW REQUEST: 097.png
+15:27:03 | INFO     | --- [START] Processing: temp_097.png ---
+15:27:03 | INFO     | DEBUG -> LoopCnt: 85, T-Count: 1, Dots: 171
+15:27:03 | INFO     | Analysis Complete.
+15:28:21 | INFO     | NEW REQUEST: WhatsApp Image 2025-11-10 at 10.55.23_677949ab.jpg
+15:28:21 | INFO     | --- [START] Processing: temp_WhatsApp Image 2025-11-10 at 10.55.23_677949ab.jpg ---
+15:28:21 | INFO     | DEBUG -> LoopCnt: 72, T-Count: 129, Dots: 162
+15:28:21 | INFO     | Analysis Complete.
+15:31:18 | INFO     | NEW REQUEST: WhatsApp Image 2025-11-12 at 15.34.41_627fb498.jpg
+15:31:18 | INFO     | --- [START] Processing: temp_WhatsApp Image 2025-11-12 at 15.34.41_627fb498.jpg ---
+15:31:19 | INFO     | DEBUG -> LoopCnt: 183, T-Count: 107, Dots: 100
+15:31:19 | INFO     | Analysis Complete.
+15:46:34 | INFO     | NEW REQUEST: 104.png
+15:46:34 | INFO     | --- [START] Processing: temp_104.png ---
+15:46:36 | INFO     | DEBUG -> LoopCnt: 208, T-Count: 7, Dots: 45
+15:46:36 | INFO     | Analysis Complete.
+15:46:36 | ERROR    | ERROR: No module named 'openpyxl'
+15:47:06 | INFO     | NEW REQUEST: 104.png
+15:47:06 | INFO     | --- [START] Processing: temp_104.png ---
+15:47:07 | INFO     | DEBUG -> LoopCnt: 208, T-Count: 7, Dots: 45
+15:47:07 | INFO     | Analysis Complete.
+15:47:07 | ERROR    | ERROR: No module named 'openpyxl'
+15:53:17 | INFO     | NEW REQUEST: 104.png
+15:53:17 | INFO     | --- [START] Processing: temp_104.png ---
+15:53:17 | INFO     | DEBUG -> LoopCnt: 158, T-Count: 7, Dots: 45
+15:53:17 | INFO     | Analysis Complete.
+15:53:17 | ERROR    | ERROR: No module named 'openpyxl'
+16:01:57 | INFO     | NEW REQUEST: 104.png
+16:01:57 | INFO     | --- [START] Processing: temp_104.png ---
+16:01:58 | INFO     | DEBUG -> LoopCnt: 158, T-Count: 7, Dots: 45
+16:01:58 | INFO     | Analysis Complete.
+16:02:04 | INFO     | Saved results to analysis_results.xlsx
+16:04:01 | INFO     | NEW REQUEST: 103.png
+16:04:01 | INFO     | --- [START] Processing: temp_103.png ---
+16:04:02 | INFO     | DEBUG -> LoopCnt: 81, T-Count: 6, Dots: 91
+16:04:02 | INFO     | Analysis Complete.
+16:04:03 | INFO     | Saved results to analysis_results.xlsx
+16:14:29 | INFO     | NEW REQUEST: 104.png
+16:14:29 | INFO     | --- [START] Processing: temp_104.png ---
+16:14:30 | INFO     | DEBUG -> LoopCnt: 149, T-Count: 7, Dots: 45
+16:14:30 | INFO     | Analysis Complete.
+16:14:32 | INFO     | Saved results to analysis_results.xlsx
+16:25:45 | INFO     | NEW REQUEST: 104.png
+16:25:45 | INFO     | --- [START] Processing: temp_104.png ---
+16:25:45 | INFO     | DEBUG -> LoopCnt: 133, T-Count: 7, Dots: 45
+16:25:45 | INFO     | Analysis Complete.
+16:25:46 | INFO     | Saved results to analysis_results.xlsx
