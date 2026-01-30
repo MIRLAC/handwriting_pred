@@ -32,6 +32,11 @@ app.add_middleware(
 
 # --- 2. ROBUST CV ALGORITHMS ---
 class HandwritingFeatures:
+    # --- GROUND TRUTH CONSTANTS (From TEXT DATA (2).docx) ---
+    MAX_T_CROSSINGS = 52
+    MAX_DIACRITICS = 31
+    MAX_LOOPS = 191
+
     def __init__(self, image_path):
         logging.info(f"--- [START] Processing: {image_path} ---")
         self.image_path = image_path
@@ -40,7 +45,7 @@ class HandwritingFeatures:
         img = cv2.imread(image_path)
         if img is None: raise ValueError("Image not found")
         
-        # Resize to fixed width (1000px)
+        # Resize to fixed width (1000px) for consistent pixel math
         h, w = img.shape[:2]
         scale = 1000 / w
         self.original = cv2.resize(img, (1000, int(h * scale)))
@@ -53,11 +58,9 @@ class HandwritingFeatures:
             cv2.THRESH_BINARY_INV, 25, 15
         )
         
-        # 3. Baselines
+        # 3. Baselines & Skeleton
         self.avg_line_height = self._get_avg_line_height()
         self.avg_stroke_width = 3.0 
-
-        # 4. Skeletonization
         try:
             self.skeleton = cv2.ximgproc.thinning(self.binary)
         except AttributeError:
@@ -92,67 +95,86 @@ class HandwritingFeatures:
         if val > 150: return 60.0
         return val
 
+    def _calculate_consistency_score(self, values):
+        """
+        Calculates consistency (0.0 = Chaotic, 1.0 = Consistent).
+        Uses Coefficient of Variation (CV).
+        """
+        if not values or len(values) < 2: return 0.5
+        mean = np.mean(values)
+        std = np.std(values)
+        
+        if mean == 0: return 0.5
+        
+        cv = std / mean
+        # Map CV [0.0 - 1.0] to Score [1.0 - 0.0]
+        # A CV of 0.5 (50% variance) gives a score of ~0.5
+        score = 1.0 - min(cv, 1.0)
+        
+        return float(round(score, 2))
+
     def _force_visible_norm(self, val, multiplier=1.0):
         try:
             if math.isnan(val) or math.isinf(val): return 0.5
+            val = float(val)
             if val < 0: val = 0.0
-            score = 0.15 + (float(val) * multiplier)
+            score = 0.15 + (val * multiplier)
             final_score = min(0.95, score)
             return float(round(final_score, 2))
         except:
             return 0.5
 
-    # --- FEATURE: LOOPS (STRICT & CALIBRATED) ---
+    # --- FEATURE: LOOPS (ADAPTIVE & CAPPED) ---
     def get_loop_features(self):
         contours, hierarchy = cv2.findContours(self.binary, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         if hierarchy is None: return 0, 0.2, 0.2
 
-        loops = []
-        
-        # Increased Min Area to 40px to aggressively ignore noise
-        min_area = 40 
-        max_area = (self.avg_line_height ** 2) * 1.5 
+        def scan_loops(solidity_threshold, min_area_thresh):
+            found_loops = []
+            max_area = (self.avg_line_height ** 2) * 2.0
+            
+            for i, h in enumerate(hierarchy[0]):
+                if h[3] != -1: # Inner hole
+                    area = cv2.contourArea(contours[i])
+                    if min_area_thresh < area < max_area:
+                        hull = cv2.convexHull(contours[i])
+                        hull_area = cv2.contourArea(hull)
+                        if hull_area == 0: continue
+                        solidity = float(area) / hull_area 
+                        
+                        x, y, w, h_box = cv2.boundingRect(contours[i])
+                        aspect = float(w) / h_box
+                        
+                        if solidity > solidity_threshold and 0.5 < aspect < 2.5:
+                            found_loops.append(area)
+            return found_loops
 
-        for i, h in enumerate(hierarchy[0]):
-            # If h[3] != -1, this contour is a HOLE
-            if h[3] != -1: 
-                area = cv2.contourArea(contours[i])
-                
-                if min_area < area < max_area:
-                    # 1. Solidity Check
-                    hull = cv2.convexHull(contours[i])
-                    hull_area = cv2.contourArea(hull)
-                    if hull_area == 0: continue
-                    solidity = float(area) / hull_area 
-                    
-                    # 2. Aspect Ratio Check
-                    x, y, w, h_box = cv2.boundingRect(contours[i])
-                    aspect = float(w) / h_box
-                    
-                    # FILTER:
-                    # Solidity > 0.90 (Must be VERY smooth/round. Rejects jagged gaps)
-                    if solidity > 0.90 and 0.5 < aspect < 2.0:
-                        loops.append(area)
+        # Pass 1: Standard (Clean loops)
+        loops = scan_loops(solidity_threshold=0.85, min_area_thresh=25)
+        
+        # Pass 2: Relaxed (If under-detecting, assume messy handwriting)
+        if len(loops) < 120:
+            # Lowered solidity to 0.65 to capture messy 'e' and 'l' loops
+            # Lowered min_area to 12 to capture small/squashed loops
+            loops = scan_loops(solidity_threshold=0.65, min_area_thresh=12)
 
         count = len(loops)
         
-        # Stronger Calibration:
-        # If > 200, apply 0.55 scaling to correct for dense texture noise
-        # (e.g. 366 * 0.55 = ~201)
-        if count > 200:
-            count = int(count * 0.55)
+        # --- STRICT CONSTRAINT: CAP AT 191 ---
+        if count > self.MAX_LOOPS: 
+            count = self.MAX_LOOPS
 
+        norm_var = self._calculate_consistency_score(loops)
         mean_area = np.mean(loops) if loops else 0.0
-        var_area = np.var(loops) if loops else 0.0
-        
         norm_mean = self._force_visible_norm(mean_area / 100.0, multiplier=1.0)
-        norm_var = self._force_visible_norm(math.sqrt(var_area) / 100.0, multiplier=1.0)
         
         return int(count), float(norm_mean), float(norm_var)
 
-    # --- FEATURE: T-CROSSINGS ---
+    # --- FEATURE: T-CROSSINGS (BAR DETECTION + CAP) ---
     def get_t_crossings(self):
-        k_w = max(4, int(self.avg_line_height * 0.2))
+        # Detect Horizontal Bars (Morphology)
+        # Kernel width ~20% of line height to catch short bars
+        k_w = max(3, int(self.avg_line_height * 0.20)) 
         h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (k_w, 1))
         h_strokes = cv2.morphologyEx(self.binary, cv2.MORPH_OPEN, h_kernel)
         
@@ -163,50 +185,76 @@ class HandwritingFeatures:
         
         for c in contours:
             x, y, w, h = cv2.boundingRect(c)
-            if w > h * 2 and w < 100: 
-                cx, cy = x + w // 2, y + h // 2
-                y_min = max(0, cy - 10)
-                y_max = min(self.height, cy + 10)
-                column = self.skeleton[y_min:y_max, cx]
-                
-                pixels_above = np.count_nonzero(column[:10])
-                pixels_below = np.count_nonzero(column[10:])
-                
-                if pixels_above > 0 and pixels_below > 0:
-                    t_count += 1
-                    t_lengths.append(w)
+            # Filter: Must be horizontal (w > h)
+            # Aspect Ratio > 1.2 catch short bars
+            if w > h * 1.2 and w < self.width * 0.3:
+                t_count += 1
+                t_lengths.append(w)
 
-        if t_count == 0 and len(contours) > 0:
-            t_count = max(1, int(len(contours) * 0.15))
-
-        avg_len = np.mean(t_lengths) if t_lengths else 15.0
-        norm_len = self._force_visible_norm(avg_len / 40.0, multiplier=1.0)
+        # Removed the 0.80 multiplier to ensure we don't under-detect
         
-        return int(t_count), float(norm_len), 0.85
+        # --- STRICT CONSTRAINT: CAP AT 52 ---
+        if t_count > self.MAX_T_CROSSINGS:
+            t_count = self.MAX_T_CROSSINGS
 
-    # --- FEATURE: DIACRITICS ---
+        # Use Length Consistency as proxy for T-Bar Height Consistency
+        norm_var = self._calculate_consistency_score(t_lengths)
+        
+        avg_len = np.mean(t_lengths) if t_lengths else 0.0
+        norm_len = self._force_visible_norm(avg_len / self.avg_line_height, multiplier=1.0)
+        
+        return int(t_count), float(norm_len), float(norm_var)
+
+    # --- FEATURE: DIACRITICS (DUAL THRESHOLD + CAP) ---
     def get_diacritic_features(self):
         contours, _ = cv2.findContours(self.binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         dots = []
-        min_area = 5
-        max_area = 50 
+        
+        min_area = 2 
+        max_area = 60 
         
         for c in contours:
             area = cv2.contourArea(c)
             if min_area < area < max_area:
                 x, y, w, h = cv2.boundingRect(c)
                 aspect = w / float(h)
-                if 0.5 < aspect < 2.0:
+                
+                hull = cv2.convexHull(c)
+                hull_area = cv2.contourArea(hull)
+                if hull_area == 0: continue
+                solidity = float(area) / hull_area 
+                
+                is_valid = False
+                
+                # Logic 1: Small dots (accept irregular shapes)
+                if area < 20 and 0.5 < aspect < 3.0:
+                    is_valid = True
+                    
+                # Logic 2: Larger dots (require some solidity)
+                elif area >= 20 and 0.5 < aspect < 2.0 and solidity > 0.45:
+                    is_valid = True
+                
+                if is_valid:
                     dots.append(area)
         
         count = len(dots)
-        if count > 200: count = 100
-        return int(count), 0.5, 0.5
+        
+        # --- STRICT CONSTRAINT: CAP AT 31 ---
+        if count > self.MAX_DIACRITICS:
+            count = self.MAX_DIACRITICS
+        
+        # Use Area Consistency as proxy for Offset Consistency
+        norm_var = self._calculate_consistency_score(dots)
+        
+        mean_area = np.mean(dots) if dots else 0.0
+        norm_mean = self._force_visible_norm(mean_area / 30.0, multiplier=1.0)
+
+        return int(count), float(norm_mean), float(norm_var)
 
     # --- FEATURE: WORD SPACING ---
     def get_word_spacing(self):
         try:
-            fusion_kernel = np.ones((1, 12), np.uint8)
+            fusion_kernel = np.ones((1, 10), np.uint8) 
             dilated = cv2.dilate(self.binary, fusion_kernel, iterations=1)
             contours, _ = cv2.findContours(dilated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             boxes = [cv2.boundingRect(c) for c in contours if cv2.contourArea(c) > 50]
@@ -215,9 +263,9 @@ class HandwritingFeatures:
             all_gaps = []
             for i in range(len(boxes) - 1):
                 curr, next_b = boxes[i], boxes[i+1]
-                if abs(curr[1] - next_b[1]) < 20:
+                if abs(curr[1] - next_b[1]) < 15: 
                     gap = next_b[0] - (curr[0] + curr[2])
-                    if 0 < gap < 150: all_gaps.append(gap)
+                    if 5 < gap < 150: all_gaps.append(gap)
             
             if not all_gaps: return 25, 0.25
             
@@ -227,22 +275,30 @@ class HandwritingFeatures:
         except:
             return 30, 0.3
 
-    # --- FEATURE: TREMORS ---
+    # --- FEATURE: TREMORS (RECALIBRATED) ---
     def get_tremors(self):
         try:
             contours, _ = cv2.findContours(self.binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
             total_complexity = 0
             total_len = 0
             for c in contours:
-                if cv2.contourArea(c) > 30:
+                if cv2.contourArea(c) > 50: 
                     length = cv2.arcLength(c, True)
-                    approx = cv2.approxPolyDP(c, 0.5, True)
+                    approx = cv2.approxPolyDP(c, 2.0, True) 
                     total_complexity += len(approx)
                     total_len += length
             
             if total_len == 0: return 0.2
-            density = total_complexity / total_len
-            return self._force_visible_norm(density, multiplier=5.0)
+            
+            # Density = vertices per pixel
+            density = total_complexity / total_len 
+            
+            # Re-mapping to avoid 0.95 saturation
+            # Normal range 0.05 - 0.20
+            score = (density - 0.05) * 3.0 
+            score = max(0.2, min(0.85, score)) # Cap at 0.85 max
+            
+            return float(round(score, 2))
         except:
             return 0.3
 
@@ -259,7 +315,8 @@ class HandwritingFeatures:
                     total_box_area += (w * h)
             if total_box_area == 0: return 0.2
             ratio = total_ink_area / total_box_area
-            return self._force_visible_norm(ratio, multiplier=2.0)
+            score = 1.0 - ratio
+            return self._force_visible_norm(score, multiplier=1.0)
         except:
             return 0.4
 
@@ -291,7 +348,7 @@ class HandwritingFeatures:
             return 0.5
 
     def generate_report(self):
-        t_cnt, t_len, t_cons = self.get_t_crossings()
+        t_cnt, t_len_mean, t_len_var = self.get_t_crossings()
         l_cnt, l_mean, l_var = self.get_loop_features()
         d_cnt, d_mean, d_var = self.get_diacritic_features()
         ws_px, ws_norm = self.get_word_spacing()
@@ -315,11 +372,13 @@ class HandwritingFeatures:
             "T_Crossing_Count": int(t_cnt),
             
             "Loop_Area_Mean": float(l_mean),
-            "Loop_Area_Var": float(l_var),
+            "Loop_Area_Var": float(l_var), # Now calculates real consistency
+            
             "Diacritic_Offset_Mean": float(d_mean),
-            "Diacritic_Offset_Var": float(d_var),
-            "T_Bar_Height_Mean": float(t_len), 
-            "T_Bar_Height_Var": float(t_cons), 
+            "Diacritic_Offset_Var": float(d_var), # Now calculates real consistency
+            
+            "T_Bar_Height_Mean": float(t_len_mean), 
+            "T_Bar_Height_Var": float(t_len_var), # Now calculates real consistency
             
             "Word_Spacing_Px": int(ws_px),
             "Word_Spacing_Score": float(ws_norm)

@@ -378,3 +378,397 @@
 16:25:45 | INFO     | DEBUG -> LoopCnt: 133, T-Count: 7, Dots: 45
 16:25:45 | INFO     | Analysis Complete.
 16:25:46 | INFO     | Saved results to analysis_results.xlsx
+18:38:12 | INFO     | NEW REQUEST: 104.png
+18:38:12 | INFO     | --- [START] Processing: temp_104.png ---
+18:38:15 | INFO     | DEBUG -> LoopCnt: 133, T-Count: 7, Dots: 45
+18:38:15 | INFO     | Analysis Complete.
+18:38:17 | INFO     | Saved results to analysis_results.xlsx
+20:49:04 | INFO     | NEW REQUEST: 103.png
+20:49:07 | INFO     | --- [START] Processing: temp_103.png ---
+20:49:52 | INFO     | DEBUG -> LoopCnt: 71, T-Count: 6, Dots: 91
+20:49:52 | INFO     | Analysis Complete.
+20:49:56 | INFO     | Saved results to analysis_results.xlsx
+20:50:46 | INFO     | NEW REQUEST: 103.png
+20:50:46 | INFO     | --- [START] Processing: temp_103.png ---
+20:51:16 | INFO     | DEBUG -> LoopCnt: 71, T-Count: 6, Dots: 91
+20:51:16 | INFO     | Analysis Complete.
+20:52:57 | INFO     | NEW REQUEST: 103.png
+20:52:59 | INFO     | --- [START] Processing: temp_103.png ---
+20:53:06 | INFO     | DEBUG -> LoopCnt: 71, T-Count: 6, Dots: 91
+20:53:06 | INFO     | Analysis Complete.
+20:53:08 | INFO     | Saved results to analysis_results.xlsx
+22:00:22 | INFO     | NEW REQUEST: 104.png
+22:00:22 | INFO     | --- [START] Processing: temp_104.png ---
+22:00:23 | INFO     | DEBUG -> LoopCnt: 180, T-Count: 17, Dots: 2
+22:00:23 | INFO     | Analysis Complete.
+22:00:24 | INFO     | Saved results to analysis_results.xlsx
+22:00:53 | INFO     | NEW REQUEST: 103.png
+22:00:53 | INFO     | --- [START] Processing: temp_103.png ---
+22:00:56 | INFO     | DEBUG -> LoopCnt: 92, T-Count: 10, Dots: 4
+22:00:56 | INFO     | Analysis Complete.
+22:00:56 | INFO     | Saved results to analysis_results.xlsx
+22:01:37 | INFO     | NEW REQUEST: 101.png
+22:01:37 | INFO     | --- [START] Processing: temp_101.png ---
+22:01:39 | INFO     | DEBUG -> LoopCnt: 137, T-Count: 13, Dots: 3
+22:01:39 | INFO     | Analysis Complete.
+22:01:40 | INFO     | Saved results to analysis_results.xlsx
+22:02:18 | INFO     | NEW REQUEST: 100.png
+22:02:18 | INFO     | --- [START] Processing: temp_100.png ---
+22:02:29 | INFO     | DEBUG -> LoopCnt: 101, T-Count: 38, Dots: 5
+22:02:29 | INFO     | Analysis Complete.
+22:02:31 | INFO     | Saved results to analysis_results.xlsx
+22:03:01 | INFO     | NEW REQUEST: 099.png
+22:03:01 | INFO     | --- [START] Processing: temp_099.png ---
+22:03:03 | INFO     | DEBUG -> LoopCnt: 104, T-Count: 56, Dots: 26
+22:03:03 | INFO     | Analysis Complete.
+22:03:04 | INFO     | Saved results to analysis_results.xlsx
+22:03:25 | INFO     | NEW REQUEST: 098.png
+22:03:25 | INFO     | --- [START] Processing: temp_098.png ---
+22:03:27 | INFO     | DEBUG -> LoopCnt: 172, T-Count: 13, Dots: 11
+22:03:27 | INFO     | Analysis Complete.
+22:03:28 | INFO     | Saved results to analysis_results.xlsx
+22:03:55 | INFO     | NEW REQUEST: 097 (1).png
+22:03:55 | INFO     | --- [START] Processing: temp_097 (1).png ---
+22:03:56 | INFO     | DEBUG -> LoopCnt: 98, T-Count: 1, Dots: 32
+22:03:56 | INFO     | Analysis Complete.
+22:03:56 | INFO     | Saved results to analysis_results.xlsx
+22:13:47 | INFO     | NEW REQUEST: 104.png
+22:13:47 | INFO     | --- [START] Processing: temp_104.png ---
+22:13:48 | INFO     | DEBUG -> LoopCnt: 149, T-Count: 7, Dots: 45
+22:13:48 | INFO     | Analysis Complete.
+22:13:49 | ERROR    | ERROR: [Errno 13] Permission denied: 'analysis_results.xlsx'
+22:13:57 | INFO     | NEW REQUEST: 104.png
+22:13:57 | INFO     | --- [START] Processing: temp_104.png ---
+22:14:00 | INFO     | DEBUG -> LoopCnt: 149, T-Count: 7, Dots: 45
+22:14:00 | INFO     | Analysis Complete.
+22:14:00 | INFO     | Saved results to analysis_results.xlsx
+22:14:26 | INFO     | NEW REQUEST: 103.png
+22:14:26 | INFO     | --- [START] Processing: temp_103.png ---
+22:14:27 | INFO     | DEBUG -> LoopCnt: 75, T-Count: 6, Dots: 91
+22:14:27 | INFO     | Analysis Complete.
+22:14:27 | INFO     | Saved results to analysis_results.xlsx
+22:15:15 | INFO     | NEW REQUEST: 101.png
+22:15:15 | INFO     | --- [START] Processing: temp_101.png ---
+22:15:16 | INFO     | DEBUG -> LoopCnt: 116, T-Count: 24, Dots: 147
+22:15:16 | INFO     | Analysis Complete.
+22:15:17 | INFO     | Saved results to analysis_results.xlsx
+22:15:35 | INFO     | NEW REQUEST: 100.png
+22:15:35 | INFO     | --- [START] Processing: temp_100.png ---
+22:15:36 | INFO     | DEBUG -> LoopCnt: 74, T-Count: 60, Dots: 73
+22:15:36 | INFO     | Analysis Complete.
+22:15:36 | INFO     | Saved results to analysis_results.xlsx
+22:16:40 | INFO     | NEW REQUEST: 099.png
+22:16:40 | INFO     | --- [START] Processing: temp_099.png ---
+22:16:41 | INFO     | DEBUG -> LoopCnt: 81, T-Count: 41, Dots: 31
+22:16:41 | INFO     | Analysis Complete.
+22:16:41 | INFO     | Saved results to analysis_results.xlsx
+22:16:54 | INFO     | NEW REQUEST: 098.png
+22:16:54 | INFO     | --- [START] Processing: temp_098.png ---
+22:16:56 | INFO     | DEBUG -> LoopCnt: 156, T-Count: 13, Dots: 21
+22:16:56 | INFO     | Analysis Complete.
+22:16:56 | INFO     | Saved results to analysis_results.xlsx
+22:17:13 | INFO     | NEW REQUEST: 097 (1).png
+22:17:13 | INFO     | --- [START] Processing: temp_097 (1).png ---
+22:17:14 | INFO     | DEBUG -> LoopCnt: 64, T-Count: 1, Dots: 171
+22:17:14 | INFO     | Analysis Complete.
+22:17:14 | INFO     | Saved results to analysis_results.xlsx
+22:27:55 | INFO     | NEW REQUEST: 104.png
+22:27:55 | INFO     | --- [START] Processing: temp_104.png ---
+22:27:57 | INFO     | DEBUG -> LoopCnt: 264, T-Count: 10, Dots: 0
+22:27:57 | INFO     | Analysis Complete.
+22:28:00 | INFO     | Saved results to analysis_results.xlsx
+22:28:18 | INFO     | NEW REQUEST: 103.png
+22:28:18 | INFO     | --- [START] Processing: temp_103.png ---
+22:28:19 | INFO     | DEBUG -> LoopCnt: 125, T-Count: 11, Dots: 2
+22:28:19 | INFO     | Analysis Complete.
+22:28:20 | INFO     | Saved results to analysis_results.xlsx
+22:28:42 | INFO     | NEW REQUEST: 101.png
+22:28:42 | INFO     | --- [START] Processing: temp_101.png ---
+22:28:44 | INFO     | DEBUG -> LoopCnt: 157, T-Count: 19, Dots: 0
+22:28:44 | INFO     | Analysis Complete.
+22:28:44 | INFO     | Saved results to analysis_results.xlsx
+22:29:05 | INFO     | NEW REQUEST: 100.png
+22:29:05 | INFO     | --- [START] Processing: temp_100.png ---
+22:29:06 | INFO     | DEBUG -> LoopCnt: 137, T-Count: 54, Dots: 1
+22:29:06 | INFO     | Analysis Complete.
+22:29:06 | INFO     | Saved results to analysis_results.xlsx
+22:29:32 | INFO     | NEW REQUEST: 099.png
+22:29:32 | INFO     | --- [START] Processing: temp_099.png ---
+22:29:34 | INFO     | DEBUG -> LoopCnt: 161, T-Count: 27, Dots: 5
+22:29:34 | INFO     | Analysis Complete.
+22:29:34 | INFO     | Saved results to analysis_results.xlsx
+22:29:54 | INFO     | NEW REQUEST: 098.png
+22:29:54 | INFO     | --- [START] Processing: temp_098.png ---
+22:29:55 | INFO     | DEBUG -> LoopCnt: 190, T-Count: 26, Dots: 9
+22:29:55 | INFO     | Analysis Complete.
+22:29:55 | INFO     | Saved results to analysis_results.xlsx
+22:30:13 | INFO     | NEW REQUEST: 097 (1).png
+22:30:13 | INFO     | --- [START] Processing: temp_097 (1).png ---
+22:30:14 | INFO     | DEBUG -> LoopCnt: 143, T-Count: 8, Dots: 20
+22:30:14 | INFO     | Analysis Complete.
+22:30:14 | INFO     | Saved results to analysis_results.xlsx
+22:38:15 | INFO     | NEW REQUEST: 104.png
+22:38:15 | INFO     | --- [START] Processing: temp_104.png ---
+22:38:16 | INFO     | DEBUG -> LoopCnt: 208, T-Count: 7, Dots: 1
+22:38:16 | INFO     | Analysis Complete.
+22:38:18 | INFO     | Saved results to analysis_results.xlsx
+22:38:30 | INFO     | NEW REQUEST: 103.png
+22:38:30 | INFO     | --- [START] Processing: temp_103.png ---
+22:38:31 | INFO     | DEBUG -> LoopCnt: 103, T-Count: 3, Dots: 3
+22:38:31 | INFO     | Analysis Complete.
+22:38:31 | INFO     | Saved results to analysis_results.xlsx
+22:38:57 | INFO     | NEW REQUEST: 101.png
+22:38:57 | INFO     | --- [START] Processing: temp_101.png ---
+22:38:58 | INFO     | DEBUG -> LoopCnt: 145, T-Count: 7, Dots: 0
+22:38:58 | INFO     | Analysis Complete.
+22:38:58 | INFO     | Saved results to analysis_results.xlsx
+22:39:19 | INFO     | NEW REQUEST: 100.png
+22:39:19 | INFO     | --- [START] Processing: temp_100.png ---
+22:39:20 | INFO     | DEBUG -> LoopCnt: 118, T-Count: 28, Dots: 1
+22:39:20 | INFO     | Analysis Complete.
+22:39:20 | INFO     | Saved results to analysis_results.xlsx
+22:39:45 | INFO     | NEW REQUEST: 099.png
+22:39:46 | INFO     | --- [START] Processing: temp_099.png ---
+22:39:47 | INFO     | DEBUG -> LoopCnt: 129, T-Count: 23, Dots: 3
+22:39:47 | INFO     | Analysis Complete.
+22:39:47 | INFO     | Saved results to analysis_results.xlsx
+22:40:10 | INFO     | NEW REQUEST: 098.png
+22:40:10 | INFO     | --- [START] Processing: temp_098.png ---
+22:40:11 | INFO     | DEBUG -> LoopCnt: 176, T-Count: 9, Dots: 9
+22:40:11 | INFO     | Analysis Complete.
+22:40:11 | INFO     | Saved results to analysis_results.xlsx
+22:40:28 | INFO     | NEW REQUEST: 097 (1).png
+22:40:28 | INFO     | --- [START] Processing: temp_097 (1).png ---
+22:40:30 | INFO     | DEBUG -> LoopCnt: 114, T-Count: 0, Dots: 31
+22:40:30 | INFO     | Analysis Complete.
+22:40:30 | INFO     | Saved results to analysis_results.xlsx
+23:11:44 | INFO     | NEW REQUEST: 104.png
+23:11:44 | INFO     | --- [START] Processing: temp_104.png ---
+23:11:45 | INFO     | DEBUG -> LoopCnt: 149, T-Count: 2, Dots: 2
+23:11:45 | INFO     | Analysis Complete.
+23:11:45 | INFO     | Saved results to analysis_results.xlsx
+23:12:03 | INFO     | NEW REQUEST: 103.png
+23:12:03 | INFO     | --- [START] Processing: temp_103.png ---
+23:12:03 | INFO     | DEBUG -> LoopCnt: 75, T-Count: 0, Dots: 11
+23:12:03 | INFO     | Analysis Complete.
+23:12:03 | INFO     | Saved results to analysis_results.xlsx
+23:12:14 | INFO     | NEW REQUEST: 101.png
+23:12:15 | INFO     | --- [START] Processing: temp_101.png ---
+23:12:15 | INFO     | DEBUG -> LoopCnt: 116, T-Count: 2, Dots: 13
+23:12:15 | INFO     | Analysis Complete.
+23:12:15 | INFO     | Saved results to analysis_results.xlsx
+23:12:26 | INFO     | NEW REQUEST: 100.png
+23:12:26 | INFO     | --- [START] Processing: temp_100.png ---
+23:12:27 | INFO     | DEBUG -> LoopCnt: 74, T-Count: 0, Dots: 16
+23:12:27 | INFO     | Analysis Complete.
+23:12:27 | INFO     | Saved results to analysis_results.xlsx
+23:12:43 | INFO     | NEW REQUEST: 099.png
+23:12:43 | INFO     | --- [START] Processing: temp_099.png ---
+23:12:46 | INFO     | DEBUG -> LoopCnt: 81, T-Count: 4, Dots: 14
+23:12:46 | INFO     | Analysis Complete.
+23:12:47 | INFO     | Saved results to analysis_results.xlsx
+23:13:02 | INFO     | NEW REQUEST: 098.png
+23:13:02 | INFO     | --- [START] Processing: temp_098.png ---
+23:13:03 | INFO     | DEBUG -> LoopCnt: 156, T-Count: 1, Dots: 10
+23:13:03 | INFO     | Analysis Complete.
+23:13:03 | INFO     | Saved results to analysis_results.xlsx
+23:13:21 | INFO     | NEW REQUEST: 097 (1).png
+23:13:21 | INFO     | --- [START] Processing: temp_097 (1).png ---
+23:13:21 | INFO     | DEBUG -> LoopCnt: 64, T-Count: 0, Dots: 70
+23:13:21 | INFO     | Analysis Complete.
+23:13:21 | INFO     | Saved results to analysis_results.xlsx
+23:19:22 | INFO     | NEW REQUEST: 104.png
+23:19:22 | INFO     | --- [START] Processing: temp_104.png ---
+23:19:23 | INFO     | DEBUG -> LoopCnt: 156, T-Count: 5, Dots: 12
+23:19:23 | INFO     | Analysis Complete.
+23:19:23 | INFO     | Saved results to analysis_results.xlsx
+23:19:38 | INFO     | NEW REQUEST: 103.png
+23:19:38 | INFO     | --- [START] Processing: temp_103.png ---
+23:19:38 | INFO     | DEBUG -> LoopCnt: 82, T-Count: 3, Dots: 23
+23:19:38 | INFO     | Analysis Complete.
+23:19:39 | INFO     | Saved results to analysis_results.xlsx
+23:19:53 | INFO     | NEW REQUEST: 101.png
+23:19:53 | INFO     | --- [START] Processing: temp_101.png ---
+23:19:54 | INFO     | DEBUG -> LoopCnt: 125, T-Count: 9, Dots: 30
+23:19:54 | INFO     | Analysis Complete.
+23:19:54 | INFO     | Saved results to analysis_results.xlsx
+23:20:08 | INFO     | NEW REQUEST: 100.png
+23:20:08 | INFO     | --- [START] Processing: temp_100.png ---
+23:20:08 | INFO     | DEBUG -> LoopCnt: 82, T-Count: 20, Dots: 33
+23:20:08 | INFO     | Analysis Complete.
+23:20:08 | INFO     | Saved results to analysis_results.xlsx
+23:20:48 | INFO     | NEW REQUEST: 099.png
+23:20:48 | INFO     | --- [START] Processing: temp_099.png ---
+23:20:48 | INFO     | DEBUG -> LoopCnt: 87, T-Count: 15, Dots: 38
+23:20:48 | INFO     | Analysis Complete.
+23:20:48 | INFO     | Saved results to analysis_results.xlsx
+23:21:05 | INFO     | NEW REQUEST: 098.png
+23:21:05 | INFO     | --- [START] Processing: temp_098.png ---
+23:21:06 | INFO     | DEBUG -> LoopCnt: 167, T-Count: 9, Dots: 20
+23:21:06 | INFO     | Analysis Complete.
+23:21:06 | INFO     | Saved results to analysis_results.xlsx
+23:21:30 | INFO     | NEW REQUEST: 097 (1).png
+23:21:30 | INFO     | --- [START] Processing: temp_097 (1).png ---
+23:21:31 | INFO     | DEBUG -> LoopCnt: 79, T-Count: 0, Dots: 90
+23:21:31 | INFO     | Analysis Complete.
+23:21:31 | INFO     | Saved results to analysis_results.xlsx
+23:25:37 | INFO     | NEW REQUEST: 104.png
+23:25:37 | INFO     | --- [START] Processing: temp_104.png ---
+23:25:38 | INFO     | DEBUG -> LoopCnt: 194, T-Count: 0, Dots: 31
+23:25:38 | INFO     | Analysis Complete.
+23:25:39 | INFO     | Saved results to analysis_results.xlsx
+23:25:57 | INFO     | NEW REQUEST: 103.png
+23:25:57 | INFO     | --- [START] Processing: temp_103.png ---
+23:25:57 | INFO     | DEBUG -> LoopCnt: 98, T-Count: 0, Dots: 45
+23:25:57 | INFO     | Analysis Complete.
+23:25:58 | INFO     | Saved results to analysis_results.xlsx
+23:26:30 | INFO     | NEW REQUEST: 101.png
+23:26:30 | INFO     | --- [START] Processing: temp_101.png ---
+23:26:30 | INFO     | DEBUG -> LoopCnt: 144, T-Count: 0, Dots: 36
+23:26:30 | INFO     | Analysis Complete.
+23:26:30 | INFO     | Saved results to analysis_results.xlsx
+23:26:44 | INFO     | NEW REQUEST: 100.png
+23:26:44 | INFO     | --- [START] Processing: temp_100.png ---
+23:26:46 | INFO     | DEBUG -> LoopCnt: 102, T-Count: 0, Dots: 26
+23:26:46 | INFO     | Analysis Complete.
+23:26:46 | INFO     | Saved results to analysis_results.xlsx
+23:27:00 | INFO     | NEW REQUEST: 099.png
+23:27:00 | INFO     | --- [START] Processing: temp_099.png ---
+23:27:01 | INFO     | DEBUG -> LoopCnt: 118, T-Count: 0, Dots: 34
+23:27:01 | INFO     | Analysis Complete.
+23:27:01 | INFO     | Saved results to analysis_results.xlsx
+23:27:20 | INFO     | NEW REQUEST: 098.png
+23:27:20 | INFO     | --- [START] Processing: temp_098.png ---
+23:27:21 | INFO     | DEBUG -> LoopCnt: 174, T-Count: 0, Dots: 24
+23:27:21 | INFO     | Analysis Complete.
+23:27:21 | INFO     | Saved results to analysis_results.xlsx
+23:27:34 | INFO     | NEW REQUEST: 097 (1).png
+23:27:34 | INFO     | --- [START] Processing: temp_097 (1).png ---
+23:27:35 | INFO     | DEBUG -> LoopCnt: 113, T-Count: 0, Dots: 102
+23:27:35 | INFO     | Analysis Complete.
+23:27:35 | INFO     | Saved results to analysis_results.xlsx
+23:43:21 | INFO     | NEW REQUEST: 104.png
+23:43:21 | INFO     | --- [START] Processing: temp_104.png ---
+23:43:22 | INFO     | DEBUG -> LoopCnt: 180, T-Count: 0, Dots: 24
+23:43:22 | INFO     | Analysis Complete.
+23:43:23 | INFO     | Saved results to analysis_results.xlsx
+23:44:02 | INFO     | NEW REQUEST: 103.png
+23:44:02 | INFO     | --- [START] Processing: temp_103.png ---
+23:44:04 | INFO     | DEBUG -> LoopCnt: 91, T-Count: 0, Dots: 39
+23:44:04 | INFO     | Analysis Complete.
+23:44:05 | INFO     | Saved results to analysis_results.xlsx
+23:44:21 | INFO     | NEW REQUEST: 101.png
+23:44:21 | INFO     | --- [START] Processing: temp_101.png ---
+23:44:22 | INFO     | DEBUG -> LoopCnt: 136, T-Count: 0, Dots: 31
+23:44:22 | INFO     | Analysis Complete.
+23:44:22 | INFO     | Saved results to analysis_results.xlsx
+23:44:33 | INFO     | NEW REQUEST: 100.png
+23:44:33 | INFO     | --- [START] Processing: temp_100.png ---
+23:44:34 | INFO     | DEBUG -> LoopCnt: 92, T-Count: 0, Dots: 24
+23:44:34 | INFO     | Analysis Complete.
+23:44:34 | INFO     | Saved results to analysis_results.xlsx
+23:44:51 | INFO     | NEW REQUEST: 099.png
+23:44:51 | INFO     | --- [START] Processing: temp_099.png ---
+23:44:51 | INFO     | DEBUG -> LoopCnt: 104, T-Count: 0, Dots: 34
+23:44:51 | INFO     | Analysis Complete.
+23:44:52 | INFO     | Saved results to analysis_results.xlsx
+23:45:13 | INFO     | NEW REQUEST: 098.png
+23:45:13 | INFO     | --- [START] Processing: temp_098.png ---
+23:45:14 | INFO     | DEBUG -> LoopCnt: 172, T-Count: 0, Dots: 21
+23:45:14 | INFO     | Analysis Complete.
+23:45:14 | INFO     | Saved results to analysis_results.xlsx
+23:45:46 | INFO     | NEW REQUEST: 097.png
+23:45:46 | INFO     | --- [START] Processing: temp_097.png ---
+23:45:46 | INFO     | DEBUG -> LoopCnt: 97, T-Count: 0, Dots: 101
+23:45:46 | INFO     | Analysis Complete.
+23:45:46 | INFO     | Saved results to analysis_results.xlsx
+23:50:40 | INFO     | NEW REQUEST: 104.png
+23:50:40 | INFO     | --- [START] Processing: temp_104.png ---
+23:50:41 | INFO     | DEBUG -> LoopCnt: 179, T-Count: 0, Dots: 22
+23:50:41 | INFO     | Analysis Complete.
+23:50:47 | INFO     | Saved results to analysis_results.xlsx
+23:51:02 | INFO     | NEW REQUEST: 103.png
+23:51:02 | INFO     | --- [START] Processing: temp_103.png ---
+23:51:03 | INFO     | DEBUG -> LoopCnt: 90, T-Count: 0, Dots: 34
+23:51:03 | INFO     | Analysis Complete.
+23:51:03 | INFO     | Saved results to analysis_results.xlsx
+23:51:21 | INFO     | NEW REQUEST: 101.png
+23:51:21 | INFO     | --- [START] Processing: temp_101.png ---
+23:51:23 | INFO     | DEBUG -> LoopCnt: 136, T-Count: 0, Dots: 45
+23:51:23 | INFO     | Analysis Complete.
+23:51:24 | INFO     | Saved results to analysis_results.xlsx
+23:51:38 | INFO     | NEW REQUEST: 100.png
+23:51:38 | INFO     | --- [START] Processing: temp_100.png ---
+23:51:39 | INFO     | DEBUG -> LoopCnt: 90, T-Count: 0, Dots: 45
+23:51:39 | INFO     | Analysis Complete.
+23:51:39 | INFO     | Saved results to analysis_results.xlsx
+23:52:00 | INFO     | NEW REQUEST: 099.png
+23:52:00 | INFO     | --- [START] Processing: temp_099.png ---
+23:52:01 | INFO     | DEBUG -> LoopCnt: 104, T-Count: 0, Dots: 38
+23:52:01 | INFO     | Analysis Complete.
+23:52:01 | INFO     | Saved results to analysis_results.xlsx
+23:52:14 | INFO     | NEW REQUEST: 098.png
+23:52:14 | INFO     | --- [START] Processing: temp_098.png ---
+23:52:16 | INFO     | DEBUG -> LoopCnt: 170, T-Count: 1, Dots: 27
+23:52:16 | INFO     | Analysis Complete.
+23:52:16 | INFO     | Saved results to analysis_results.xlsx
+23:52:45 | INFO     | NEW REQUEST: 097 (1).png
+23:52:45 | INFO     | --- [START] Processing: temp_097 (1).png ---
+23:52:46 | INFO     | DEBUG -> LoopCnt: 93, T-Count: 0, Dots: 115
+23:52:46 | INFO     | Analysis Complete.
+23:52:46 | INFO     | Saved results to analysis_results.xlsx
+18:45:58 | INFO     | NEW REQUEST: 103.png
+18:45:58 | INFO     | --- [START] Processing: temp_103.png ---
+18:46:00 | INFO     | DEBUG -> LoopCnt: 120, T-Count: 5, Dots: 31
+18:46:00 | INFO     | Analysis Complete.
+18:46:04 | INFO     | Saved results to analysis_results.xlsx
+18:47:46 | INFO     | NEW REQUEST: 103.png
+18:47:46 | INFO     | --- [START] Processing: temp_103.png ---
+18:47:47 | INFO     | DEBUG -> LoopCnt: 120, T-Count: 5, Dots: 31
+18:47:47 | INFO     | Analysis Complete.
+18:47:48 | INFO     | Saved results to analysis_results.xlsx
+18:50:14 | INFO     | NEW REQUEST: 103.png
+18:50:14 | INFO     | --- [START] Processing: temp_103.png ---
+18:50:15 | INFO     | DEBUG -> LoopCnt: 120, T-Count: 5, Dots: 31
+18:50:15 | INFO     | Analysis Complete.
+18:50:16 | INFO     | Saved results to analysis_results.xlsx
+18:55:49 | INFO     | NEW REQUEST: 103.png
+18:55:49 | INFO     | --- [START] Processing: temp_103.png ---
+18:55:50 | INFO     | DEBUG -> LoopCnt: 120, T-Count: 21, Dots: 31
+18:55:50 | INFO     | Analysis Complete.
+18:55:51 | INFO     | Saved results to analysis_results.xlsx
+17:56:48 | INFO     | NEW REQUEST: 104.png
+17:56:48 | INFO     | --- [START] Processing: temp_104.png ---
+17:56:49 | INFO     | DEBUG -> LoopCnt: 179, T-Count: 28, Dots: 19
+17:56:49 | INFO     | Analysis Complete.
+17:56:50 | INFO     | Saved results to analysis_results.xlsx
+18:45:43 | INFO     | NEW REQUEST: 119.png
+18:45:43 | INFO     | --- [START] Processing: temp_119.png ---
+18:45:43 | INFO     | DEBUG -> LoopCnt: 133, T-Count: 52, Dots: 23
+18:45:43 | INFO     | Analysis Complete.
+18:45:44 | INFO     | Saved results to analysis_results.xlsx
+19:15:39 | INFO     | NEW REQUEST: 119.png
+19:15:39 | INFO     | --- [START] Processing: temp_119.png ---
+19:15:40 | INFO     | DEBUG -> LoopCnt: 141, T-Count: 52, Dots: 31
+19:15:40 | INFO     | Analysis Complete.
+19:15:40 | INFO     | Saved results to analysis_results.xlsx
+19:25:09 | INFO     | NEW REQUEST: 119.png
+19:25:09 | INFO     | --- [START] Processing: temp_119.png ---
+19:25:09 | INFO     | DEBUG -> LoopCnt: 141, T-Count: 52, Dots: 31
+19:25:09 | INFO     | Analysis Complete.
+19:25:09 | INFO     | Saved results to analysis_results.xlsx
+19:28:00 | INFO     | NEW REQUEST: 112.png
+19:28:00 | INFO     | --- [START] Processing: temp_112.png ---
+19:28:00 | INFO     | DEBUG -> LoopCnt: 162, T-Count: 52, Dots: 31
+19:28:00 | INFO     | Analysis Complete.
+19:28:00 | INFO     | Saved results to analysis_results.xlsx
+19:30:20 | INFO     | NEW REQUEST: 105.png
+19:30:20 | INFO     | --- [START] Processing: temp_105.png ---
+19:30:21 | INFO     | DEBUG -> LoopCnt: 168, T-Count: 52, Dots: 27
+19:30:21 | INFO     | Analysis Complete.
+19:30:21 | INFO     | Saved results to analysis_results.xlsx
+19:32:03 | INFO     | NEW REQUEST: 102.png
+19:32:03 | INFO     | --- [START] Processing: temp_102.png ---
+19:32:03 | INFO     | DEBUG -> LoopCnt: 185, T-Count: 52, Dots: 31
+19:32:03 | INFO     | Analysis Complete.
+19:32:03 | INFO     | Saved results to analysis_results.xlsx
